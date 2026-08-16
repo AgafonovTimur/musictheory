@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Комплект тренажёров</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+  }
+  .level-frame {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .level-frame.active {
+    visibility: visible;
+    pointer-events: auto;
+  }
+</style>
+</head>
+<body>
+
+  <iframe id="frameCircle" class="level-frame" src="circle_of_fifths.html"></iframe>
+  <iframe id="frameNotes" class="level-frame" src="note-trainer.html"></iframe>
+  <iframe id="frameEar" class="level-frame" src="ear-trainer.html"></iframe>
+
+<script>
+  const STORAGE_KEY = 'shellActiveLevel';
+  const validLevels = ['frameCircle', 'frameNotes', 'frameEar'];
+
+  const SHELL_TITLE_I18N = {
+    ru: 'Музыкальная теория',
+    en: 'Music Theory',
+    zh: '音乐理论'
+  };
+
+  const frames = {
+    frameCircle: document.getElementById('frameCircle'),
+    frameNotes: document.getElementById('frameNotes'),
+    frameEar: document.getElementById('frameEar')
+  };
+
+  const langByFrame = { frameCircle: 'ru', frameNotes: 'ru', frameEar: 'ru' };
+  let activeLevel = 'frameCircle';
+
+  function setTitleForLang(lang) {
+    document.title = SHELL_TITLE_I18N[lang] || SHELL_TITLE_I18N.ru;
+  }
+
+  function showLevel(id) {
+    if (!validLevels.includes(id)) return;
+    activeLevel = id;
+    validLevels.forEach(levelId => {
+      document.getElementById(levelId).classList.toggle('active', levelId === id);
+    });
+    try { localStorage.setItem(STORAGE_KEY, id); } catch (e) {}
+    setTitleForLang(langByFrame[id]);
+  }
+
+  window.addEventListener('message', (event) => {
+    const data = event.data;
+    if (!data) return;
+    if (data.type === 'switchLevel' && data.target) {
+      showLevel(data.target);
+    } else if (data.type === 'uiLang' && data.lang) {
+      const frameId = validLevels.find(id => frames[id] && frames[id].contentWindow === event.source);
+      if (!frameId) return;
+      langByFrame[frameId] = data.lang;
+      if (frameId === activeLevel) setTitleForLang(data.lang);
+    }
+  });
+
+  let initialLevel = 'frameCircle';
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && validLevels.includes(saved)) initialLevel = saved;
+  } catch (e) {}
+
+  showLevel(initialLevel);
+</script>
+
+</body>
+</html>
