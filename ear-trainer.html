@@ -3,6 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+/* ===== Мост между приложением и оболочкой index.html =====
+   Наружу уходят: выбранный язык, положение панели настроек и запрос
+   переключения уровня. Внутрь принимаются язык и положение настроек
+   от оболочки. Флаг __bridgeSuppress не даёт зациклить обмен. */
+(function(){
+  var inShell = false;
+  try { inShell = !!(window.parent && window.parent !== window); } catch(e){ inShell = false; }
+  window.__inShell = inShell;
+  window.__bridgeSuppress = false;
+
+  function raw(msg){
+    if(!inShell) return;
+    try { window.parent.postMessage(msg, '*'); } catch(e){}
+  }
+  window.__appBridgeSend = function(msg){
+    if(window.__bridgeSuppress) return;
+    raw(msg);
+  };
+
+  window.addEventListener('message', function(e){
+    var d = e.data;
+    if(!d || typeof d !== 'object') return;
+    if(d.type === 'requestState'){
+      var st = (typeof window.__appGetState === 'function') ? (window.__appGetState() || {}) : {};
+      raw({ type:'appState', lang: st.lang, pos: st.pos });
+      return;
+    }
+    if(d.type !== 'uiLang' && d.type !== 'settingsPosition') return;
+    window.__bridgeSuppress = true;
+    try {
+      if(d.type === 'uiLang' && d.lang && typeof window.__setUiLangExternal === 'function'){
+        window.__setUiLangExternal(d.lang);
+      }
+      if(d.type === 'settingsPosition' && d.value && typeof window.__setSettingsPositionExternal === 'function'){
+        window.__setSettingsPositionExternal(d.value);
+      }
+    } catch(err){}
+    window.__bridgeSuppress = false;
+  });
+
+  // кнопки переключения уровней (Квинтовый круг / Ноты / Слух)
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest ? e.target.closest('[data-switch-level]') : null;
+    if(!b) return;
+    raw({ type:'switchLevel', target: b.getAttribute('data-switch-level') });
+  });
+
+  window.addEventListener('load', function(){
+    var st = (typeof window.__appGetState === 'function') ? (window.__appGetState() || {}) : {};
+    raw({ type:'appReady', lang: st.lang, pos: st.pos });
+  });
+})();
+</script>
+
 <title data-i18n="pageTitle">Тренировка слуха</title>
 <style>
   /* ===== Темы ===== */
@@ -1455,11 +1510,12 @@
     <div class="menu-panel right-panel" id="right-panel">
 
       <div class="section">
-        <div class="nav-tabs" id="appSwitchTabs">
-          <button class="tab-btn" data-level="frameCircle">Круг квинт</button>
-          <button class="tab-btn" data-level="frameNotes">Тренажёр нот</button>
-          <button class="tab-btn active" data-level="frameEar">Слух</button>
+        <div class="nav-tabs" id="appSwitchBar">
+      <button class="tab-btn" data-switch-level="frameCircle" data-i18n="appSwitchCircle">Квинтовый круг</button>
+      <button class="tab-btn" data-switch-level="frameNotes" data-i18n="appSwitchNotes">Ноты</button>
+      <button class="tab-btn active" data-switch-level="frameEar" data-i18n="appSwitchEar">Слух</button>
         </div>
+
         <div class="nav-tabs" id="modeTabs">
           <button class="tab-btn active" data-mode="notes" data-i18n="tabNotes">Ноты</button>
           <button class="tab-btn" data-mode="intervals" data-i18n="tabIntervals">Интервалы</button>
@@ -1766,6 +1822,9 @@ window.EAR_TRAINER_CONFIG = {
       settingsPositionLeft: 'слева',
       settingsPositionCenter: 'по центру',
       settingsPositionRight: 'справа',
+      appSwitchCircle: 'Квинтовый круг',
+      appSwitchNotes: 'Ноты',
+      appSwitchEar: 'Слух',
       autoNextOnWrong: 'переходить к новому вопросу при неправильном ответе',
       langSectionTitle: 'Язык',
       audioOutputTitle: 'Вывод звука',
@@ -1858,6 +1917,9 @@ window.EAR_TRAINER_CONFIG = {
       settingsPositionLeft: 'left',
       settingsPositionCenter: 'centered',
       settingsPositionRight: 'right',
+      appSwitchCircle: 'Circle of Fifths',
+      appSwitchNotes: 'Notes',
+      appSwitchEar: 'Ear',
       autoNextOnWrong: 'advance to next question on wrong answer',
       langSectionTitle: 'Language',
       audioOutputTitle: 'Sound output',
@@ -1950,6 +2012,9 @@ window.EAR_TRAINER_CONFIG = {
       settingsPositionLeft: '左侧',
       settingsPositionCenter: '居中',
       settingsPositionRight: '右侧',
+      appSwitchCircle: '五度圈',
+      appSwitchNotes: '音符',
+      appSwitchEar: '听觉',
       autoNextOnWrong: '答错后自动进入下一题',
       langSectionTitle: '语言',
       audioOutputTitle: '声音输出',
@@ -2170,7 +2235,6 @@ window.EAR_TRAINER_CONFIG = {
   function applyLanguage(lang, opts) {
     opts = opts || {};
     state.lang = lang;
-    try{ parent.postMessage({ type: "uiLang", lang: lang }, "*"); }catch(e){}
     INTERVALS.forEach((iv) => { iv.name = (INTERVAL_NAMES[lang] && INTERVAL_NAMES[lang][iv.id]) || iv.id; });
     CHORDS.forEach((c) => { if (CHORD_NAME_OVERRIDES[lang] && CHORD_NAME_OVERRIDES[lang][c.id]) c.name = CHORD_NAME_OVERRIDES[lang][c.id]; });
     INVERSIONS.forEach((inv) => { inv.label = (INVERSION_LABELS[lang] && INVERSION_LABELS[lang][inv.i]) || t('inversionFallback') + inv.i; });
@@ -2183,6 +2247,7 @@ window.EAR_TRAINER_CONFIG = {
     });
 
     try { localStorage.setItem('earTrainerLang', lang); } catch (e) {}
+    if (window.__appBridgeSend) window.__appBridgeSend({ type: 'uiLang', lang: lang });
 
     if (!opts.initial) {
       buildPoolGrid();
@@ -2190,6 +2255,12 @@ window.EAR_TRAINER_CONFIG = {
       renderAnswerUI();
     }
   }
+
+  // применение языка, пришедшего от оболочки (тем же путём, что и клик по кнопке)
+  window.__setUiLangExternal = function (lang) {
+    if (lang !== 'ru' && lang !== 'en' && lang !== 'zh') return;
+    applyLanguage(lang);
+  };
 
   const OCTAVES = [
     { o: 1, label: 'C1' }, { o: 2, label: 'C2' },
@@ -3810,12 +3881,6 @@ window.EAR_TRAINER_CONFIG = {
       if (cb) cb.addEventListener('change', () => { settingsChanged(); });
     });
 
-    document.querySelectorAll('#appSwitchTabs .tab-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        parent.postMessage({ type: 'switchLevel', target: btn.dataset.level }, '*');
-      });
-    });
-
     document.querySelectorAll('#modeTabs .tab-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('#modeTabs .tab-btn').forEach((b) => b.classList.remove('active'));
@@ -3954,10 +4019,22 @@ window.EAR_TRAINER_CONFIG = {
           });
           applySettingsPositionMode(true);
           saveSettings();
+          if (window.__appBridgeSend) window.__appBridgeSend({ type: 'settingsPosition', value: cb.dataset.position });
         });
       });
     }
     applySettingsPositionMode();
+
+    // применение положения панели, пришедшего от оболочки
+    window.__setSettingsPositionExternal = function (pos) {
+      if (pos !== 'left' && pos !== 'center' && pos !== 'right') return;
+      settingsPositionCheckboxes.forEach((cb) => { cb.checked = cb.dataset.position === pos; });
+      applySettingsPositionMode(true);
+      saveSettings();
+    };
+    window.__appGetState = function () {
+      return { lang: state.lang, pos: getSettingsPosition() };
+    };
     if (isFirstVisit) {
       showSettingsPanel();
       saveSettings();
