@@ -762,15 +762,21 @@
     max-width:520px;
     margin-left:-260px;
     margin-right:0;
-    transform:translateY(100%) scale(var(--mp-scale,1));
+    /* Сдвиг вниз должен учитывать масштаб панели (--mp-scale): translateY
+       в процентах считается от НЕмасштабированной высоты, а видимая высота
+       после scale() больше в --mp-scale раз. Без умножения на масштаб на
+       широком экране (телефон в landscape, scale > 1) закрытая панель
+       оставалась частично видимой поверх экрана — казалось, что настройки
+       не закрываются. */
+    transform:translateY(calc(100% * var(--mp-scale,1) + 8px)) scale(var(--mp-scale,1));
     transform-origin:50% 100%;
   }
   /* ===== Мобильная версия панели настроек: выезжающая снизу шторка
-     (bottom-sheet), открывается свайпом вверх, закрывается свайпом
-     вниз или тапом вне панели. Настройки внутри — те же самые, но
+     (bottom-sheet), открывается двойным тапом по свободному месту
+     экрана, закрывается тапом вне панели или тапом двумя пальцами. Настройки внутри — те же самые, но
      позиционирование и способ открытия/закрытия — отдельные от
      десктопной версии и не пересекаются с ней (десктоп управляется
-     колесом мыши и клавишей W, мобильная — свайпами и хендлом). ===== */
+     колесом мыши и клавишей W, мобильная — тапами). ===== */
   /* Ширина панели на мобильной раскладке НЕ растягивается под ширину
      экрана (как раньше — width:100%, из-за чего кнопки внутри "плыли"
      и становились непропорционально широкими). Вместо этого ширина
@@ -789,18 +795,26 @@
     max-width:520px;
     margin-left:-260px;
     --mp-scale:1;
-    transform:translateY(100%) scale(var(--mp-scale,1));
+    /* Закрытая панель уезжает вниз на свою ВИДИМУЮ высоту. translateY в
+       процентах считается от высоты ДО scale(), а видимая высота после
+       scale() больше в --mp-scale раз — поэтому сдвиг умножается на
+       --mp-scale (+8px запас на тень). Раньше здесь было просто
+       translateY(100%), и на широком экране (телефон в landscape, где
+       масштаб > 1) закрытая панель оставалась частично видимой поверх
+       экрана и перехватывала касания — выглядело так, будто настройки
+       не закрываются. */
+    transform:translateY(calc(100% * var(--mp-scale,1) + 8px)) scale(var(--mp-scale,1));
     transform-origin:50% 100%;
-    /* Панель должна открываться СРАЗУ на 70% высоты экрана (а не
+    /* Панель должна открываться СРАЗУ на 90% высоты экрана (а не
        вырастать под контент и требовать докрутки до неё) — поэтому
        задаём фиксированную height, а не только max-height. Внутри
        панель прокручивается (overflow:auto унаследовано от базового
        #sidePanel) до последней строки, если контента больше, чем
-       помещается в эти 70vh. Делим на --mp-scale по той же причине,
+       помещается в эти 90vh. Делим на --mp-scale по той же причине,
        что и раньше (масштаб экрана компенсируется CSS-scale, поэтому
        "физическая" высота до scale должна быть больше на 1/scale). */
-    height:calc(70vh / var(--mp-scale,1));
-    max-height:calc(70vh / var(--mp-scale,1));
+    height:calc(90vh / var(--mp-scale,1));
+    max-height:calc(90vh / var(--mp-scale,1));
     border-radius:16px 16px 0 0;
     transition:transform 0.25s ease;
     touch-action:pan-y;
@@ -1112,9 +1126,60 @@
     padding:8px 4px;
     font-size:13px;
   }
-  /* на узких/мобильных экранах места справа от круга нет — прячем */
-  body.is-mobile #trainPianoWrap{
-    display:none !important;
+  /* ===== МОБИЛЬНАЯ РАСКЛАДКА: клавиатура-подсказка переезжает ПОД круг
+     (справа от круга на телефоне места нет). Обёртка остаётся абсолютно
+     спозиционированной внутри #trainCircleInner, но уже не от правого
+     края (left:100%), а от нижнего (top:100%), по центру и во всю
+     ширину экрана. Сам SVG растягивается по ширине (width:100% +
+     height:auto, пропорции держит viewBox), с ограничением по высоте,
+     чтобы в landscape клавиатура не занимала весь экран.
+     Видимость по-прежнему включается/выключается из JS через
+     style.display, поэтому здесь display НЕ трогаем. ===== */
+  body.is-mobile #trainPianoWrap,
+  body.is-mobile #l3PianoWrap{
+    left:50%;
+    top:100%;
+    /* JS проставляет marginLeft инлайном для десктопного положения
+       (отступ от правого края круга) — на мобильной раскладке он не
+       нужен, поэтому гасим его !important */
+    margin-left:0 !important;
+    margin-top:12px;
+    transform:translateX(-50%);
+    width:calc(100vw - 12px);
+    justify-content:center;
+  }
+  /* Размеры самого SVG клавиатуры на мобильной раскладке задаёт JS
+     (layoutMobilePiano): масштаб фиксирован по «эталону» в 2 октавы,
+     поэтому клавиши всегда одного размера и верхний край клавиш всегда
+     на одном уровне, сколько бы октав ни рисовалось. Здесь размеры не
+     задаём, иначе они перебьют расчёт. */
+  /* Круг поднимается на 20% высоты экрана, когда включён чекбокс
+     "Показывать клавиатуру" — чтобы под ним освободилось место для
+     клавиатуры. Класс mobile-piano-on вешается на <body> из JS
+     (updateMobilePianoLayout). Двигаем именно #circleInner —
+     клавиатура лежит внутри него и едет вместе с кругом.
+     Подъём правится одним числом ниже: 15vh = 15% высоты экрана.
+     Без галки круг остаётся точно по центру, как и был. */
+  body.is-mobile.mobile-piano-on #circleInner,
+  body.is-mobile.mobile-piano-on #trainCircleInner{
+    transform:translateY(-15vh);
+    transition:transform 0.2s ease;
+  }
+  /* Кнопки обращений под клавиатурой: на телефоне ряд из 4 кнопок
+     фиксированной ширины не помещается — растягиваем по ширине
+     клавиатуры и уменьшаем шрифт. */
+  body.is-mobile #trainInversionBtns{
+    left:0;
+    width:100%;
+    margin-left:0;
+    justify-content:center;
+  }
+  body.is-mobile #trainInversionBtns .ringBtn{
+    width:auto;
+    flex:1 1 0;
+    min-width:0;
+    font-size:11px;
+    padding:8px 2px;
   }
   /* ===== Клавиатура-подсказка вкладки "Практика 3" =====
      Независимая копия #trainPianoWrap/#trainPianoSvg выше — тот же
@@ -1142,9 +1207,8 @@
     overflow:visible;
     display:block;
   }
-  body.is-mobile #l3PianoWrap{
-    display:none !important;
-  }
+  /* Мобильное положение #l3PianoWrap задано общим правилом выше
+     (вместе с #trainPianoWrap) — под кругом, во всю ширину экрана. */
   .trainPianoWhiteKey{
     fill:var(--piano-white-key, #6b6b6b);
     stroke:var(--bg);
@@ -4709,7 +4773,110 @@ function updateTrainInversionButtons(){
   }
 }
 
+/* ===== МОБИЛЬНАЯ РАСКЛАДКА: размер и положение клавиатуры под кругом =====
+   Клавиатура рисуется на 1, 2 или больше октав — картинка от этого
+   меняется по ШИРИНЕ, а по высоте всегда одинаковая (зона стрелок +
+   клавиши). Если просто растягивать её по ширине экрана, то при смене
+   числа октав (например, при обращениях аккорда) масштаб скачет: клавиши
+   то крупнее, то мельче, и весь блок «прыгает» вверх-вниз.
+   Поэтому масштаб берётся ФИКСИРОВАННЫЙ — такой, при котором ровно 2
+   октавы занимают всю ширину экрана (baseScale). Тогда:
+     • 1 октава  — клавиши того же размера, картинка просто уже и стоит
+                   по центру;
+     • 2 октавы  — во всю ширину, как сейчас;
+     • 3+ октав  — в ширину экрана уже не влезают, масштаб уменьшается
+                   (scale < baseScale), клавиши становятся ниже. Чтобы
+                   при этом ВЕРХНИЙ край клавиш остался на прежнем
+                   уровне, блок опускается вниз ровно на то, на сколько
+                   «усохла» зона стрелок над клавишами — двигается только
+                   нижний край.
+   В альбомной ориентации масштаб дополнительно ограничен долей высоты
+   экрана (MOBILE_PIANO_MAX_H_VH), иначе клавиатура заняла бы весь экран. */
+const MOBILE_PIANO_SIDE_MARGIN = 12; // px, суммарный отступ клавиатуры от краёв экрана
+const MOBILE_PIANO_GAP = 12;         // px, зазор между низом круга и картинкой клавиатуры
+const MOBILE_PIANO_MAX_H_VH = 0.34;  // доля высоты экрана — потолок для высоты клавиатуры
+/* Круг с включённой клавиатурой поднят на 15% высоты экрана (см. CSS
+   .mobile-piano-on ... translateY(-15vh)). Клавиатура прибита к нижнему
+   краю круга и едет вместе с ним, поэтому на столько же она опустилась
+   бы относительно прежнего варианта с подъёмом 20%. Это число возвращает
+   её на прежний уровень: зазор между кругом и клавиатурой уменьшается
+   ровно на 5% высоты экрана. Если поменяешь -15vh в CSS — поменяй и
+   тут (разница между старым 20% и новым значением). */
+const MOBILE_PIANO_UP_VH = 0.05;
+const MOBILE_PIANO_REF_BLOCKS = 2;   // эталон масштаба — клавиатура в 2 октавы
+
+function mobilePianoRefWidth(){
+  const layout = buildTrainPianoLayout(MOBILE_PIANO_REF_BLOCKS);
+  return TRAIN_PIANO_MARGIN_X*2 + layout.totalWhite*TRAIN_PIANO_WHITE_W;
+}
+
+function layoutMobilePiano(wrapEl, svgEl){
+  if(!wrapEl || !svgEl) return;
+  // isMobile объявлена ниже по файлу (let) — на самых ранних вызовах
+  // обращение к ней бросило бы ошибку и оборвало отрисовку клавиатуры,
+  // поэтому читаем её через try/catch. Итоговые размеры всё равно будут
+  // выставлены при следующем пересчёте (в конце скрипта и при resize).
+  let mob = false;
+  try{ mob = !!isMobile; }catch(e){ mob = false; }
+  if(!mob){
+    // на десктопе размеры берутся из атрибутов SVG, инлайновые — снимаем
+    svgEl.style.width = '';
+    svgEl.style.height = '';
+    wrapEl.style.marginTop = '';
+    return;
+  }
+  const vbW = parseFloat(svgEl.getAttribute('width'));
+  const vbH = parseFloat(svgEl.getAttribute('height'));
+  if(!vbW || !vbH) return;
+  const availW = Math.max(80, window.innerWidth - MOBILE_PIANO_SIDE_MARGIN);
+  const refH = TRAIN_PIANO_ARROW_ZONE_H + TRAIN_PIANO_WHITE_H;
+  const baseScale = Math.min(availW / mobilePianoRefWidth(), (window.innerHeight * MOBILE_PIANO_MAX_H_VH) / refH);
+  const scale = Math.min(baseScale, availW / vbW);
+  svgEl.style.width = (vbW * scale) + 'px';
+  svgEl.style.height = (vbH * scale) + 'px';
+  // компенсация «усохшей» зоны стрелок — держит верхний край клавиш на
+  // месте; минус MOBILE_PIANO_UP_VH — подтягивание клавиатуры вверх вслед
+  // за опущенным кругом (см. комментарий у константы)
+  const up = window.innerHeight * MOBILE_PIANO_UP_VH;
+  wrapEl.style.marginTop = (MOBILE_PIANO_GAP + TRAIN_PIANO_ARROW_ZONE_H * (baseScale - scale) - up) + 'px';
+}
+
+// Пересчёт для обеих клавиатур сразу (поворот экрана, смена desktop/mobile).
+// try/catch — элементы "Аккордов/Ладов" объявлены ниже по файлу и на
+// самых ранних вызовах ещё недоступны.
+function updateMobilePianoGeometry(){
+  try{ layoutMobilePiano(trainPianoWrapEl, trainPianoSvgEl); }catch(e){}
+  try{ layoutMobilePiano(l3PianoWrapEl, l3PianoSvgEl); }catch(e){}
+}
+
+/* ===== МОБИЛЬНАЯ РАСКЛАДКА: круг вверх + клавиатура под ним =====
+   Когда на текущей вкладке включён чекбокс "Показывать клавиатуру",
+   на <body> вешается класс mobile-piano-on: круг поднимается на 20%
+   высоты экрана (CSS), а клавиатура-подсказка показывается под ним во
+   всю ширину. Снял галку — класс убирается, круг возвращается по центру.
+   Ориентируемся именно на ЧЕКБОКС, а не на то, нарисована ли сейчас
+   клавиатура: иначе круг прыгал бы вверх-вниз между вопросами (пока
+   аккорд не выбран, клавиатуре нечего показывать).
+   try/catch — страховка от обращения к переменным настроек до того,
+   как выполнилась их строка объявления (эта функция может быть вызвана
+   очень рано, при первичной раскладке вкладок). */
+function updateMobilePianoLayout(){
+  let on = false;
+  try{
+    if(isMobile){
+      if(appMode === 'training') on = !!trainShowPiano;
+      else if(appMode === 'practice' && practiceLevel === 3) on = !!l3ShowPiano;
+    }
+  }catch(e){ on = false; }
+  const changed = document.body.classList.contains('mobile-piano-on') !== on;
+  document.body.classList.toggle('mobile-piano-on', on);
+  // Размер круга на телефоне зависит от того, освобождено ли место под
+  // клавиатуру (см. circleFitScale) — пересчитываем при переключении.
+  if(changed && typeof applyZoom === 'function') applyZoom();
+}
+
 function updateTrainPiano(){
+  updateMobilePianoLayout();
   const shouldShow = trainShowPiano && appMode === 'training';
   let notes = shouldShow ? computeTrainPianoNotes() : null;
   if(!notes){
@@ -4722,6 +4889,7 @@ function updateTrainPiano(){
   if(trainShowInversions && !trainModeType) notes = buildTrainInversionNotes(notes);
   trainPianoWrapEl.style.display = 'flex';
   renderTrainPiano(notes);
+  layoutMobilePiano(trainPianoWrapEl, trainPianoSvgEl);
   updateTrainPianoOffset();
   updateTrainInversionButtons();
 }
@@ -5119,6 +5287,7 @@ function updateL3WedgeVisibility(){
 }
 
 function updateL3Piano(){
+  updateMobilePianoLayout();
   const shouldShow = l3ShowPiano && appMode === 'practice' && practiceLevel === 3;
   updateL3WedgeVisibility();
   const notes = shouldShow ? computeL3PianoNotes() : null;
@@ -5129,6 +5298,7 @@ function updateL3Piano(){
   }
   l3PianoWrapEl.style.display = 'flex';
   renderL3Piano(notes, l3FoundPcSet());
+  layoutMobilePiano(l3PianoWrapEl, l3PianoSvgEl);
   updateL3PianoOffset();
 }
 
@@ -9658,7 +9828,7 @@ const sidePanelBackdrop = document.getElementById('sidePanelBackdrop');
 // Мобильная версия определяется отдельно от десктопной: узкий экран
 // ИЛИ отсутствие мыши (только тач). Проверяется один раз при загрузке
 // и при изменении размера окна/поворота экрана, чтобы поведение
-// (свайпы vs колесо мыши) не смешивалось между собой.
+// (тапы vs колесо мыши) не смешивалось между собой.
 function isMobileLayout(){
   return window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
 }
@@ -10000,11 +10170,23 @@ window.addEventListener('resize', ()=>{
   // Пересчитываем «вписывание» круга в экран (поворот телефона, смена
   // desktop/mobile) — см. circleFitScale()/applyZoom().
   if(typeof applyZoom === 'function') applyZoom();
+  // Класс "круг поднят + клавиатура под ним" зависит от мобильной
+  // раскладки — пересчитываем при смене desktop/mobile и повороте.
+  if(typeof updateMobilePianoLayout === 'function') updateMobilePianoLayout();
+  // Размер клавиатуры под кругом считается от размеров экрана — при
+  // повороте телефона пересчитываем.
+  if(typeof updateMobilePianoGeometry === 'function') updateMobilePianoGeometry();
 });
 
 // Клик/тап по затемнению фона — закрыть настройки (общее для десктопа
 // и мобильной версии — "тап вне настроек").
-sidePanelBackdrop.addEventListener('click', () => setSidePanelOpen(false));
+sidePanelBackdrop.addEventListener('click', () => {
+  setSidePanelOpen(false);
+  // Сбрасываем счётчик двойного тапа: иначе два быстрых тапа по
+  // затемнению закрыли бы панель первым тапом и тут же снова открыли
+  // вторым (сработал бы жест "двойной тап" ниже).
+  dtapLastTime = 0;
+});
 
 /* ===== ДЕСКТОП: средняя кнопка мыши (колесо как кнопка) открывает и
    закрывает настройки — одно нажатие открывает, следующее закрывает.
@@ -10023,42 +10205,55 @@ document.addEventListener('auxclick', (e) => {
   if (e.button === 1) e.preventDefault();
 });
 
-/* ===== МОБИЛЬНАЯ ВЕРСИЯ: свайп вверх В ЛЮБОМ МЕСТЕ ЭКРАНА открывает
-   панель, свайп вниз в любом месте закрывает её (плюс тап вне панели
-   по затемнению — тоже закрывает, через click выше). Никакого
-   отдельного "хендла" — весь экран является зоной свайпа. Работает
-   только когда активна мобильная раскладка. ===== */
-const SWIPE_THRESHOLD = 40; // px, минимальное перемещение для срабатывания свайпа
-let sidePanelTouchStartY = null;
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ: панель настроек открывается ДВОЙНЫМ ТАПОМ
+   (два быстрых касания ОДНИМ пальцем подряд) по свободному месту
+   экрана. Свайп вверх настройки больше НЕ открывает — раньше панель
+   выскакивала при любой прокрутке пальцем вверх.
+   Закрытие осталось прежним: тап по затемнению вне панели или тап
+   двумя пальцами. Работает только в мобильной раскладке. ===== */
+const DOUBLE_TAP_MAX_DELAY = 350; // ms, максимальная пауза между двумя касаниями
+const DOUBLE_TAP_MAX_DIST  = 40;  // px, максимальное расстояние между точками касаний
+const DOUBLE_TAP_MAX_HOLD  = 300; // ms, дольше — это удержание/перетаскивание, а не тап
+let dtapLastTime = 0, dtapLastX = 0, dtapLastY = 0;
+let dtapStart = null;
 
-/* ВАЖНО: этот свайп должен реагировать ТОЛЬКО на жест ОДНИМ пальцем.
-   Раньше touchstart брал координату e.touches[0] независимо от того,
-   сколько пальцев на экране, поэтому при 2/3/4-пальцевых жестах
-   (открытие настроек / зум круга, см. ниже) этот же обработчик мог
-   ОДНОВРЕМЕННО и параллельно засчитать "свайп" и вызвать
-   setSidePanelOpen() в противоречии с результатом мультитач-тапа —
-   из-за этого казалось, что панель "не закрывается вообще". Теперь
-   при появлении второго пальца слежение за свайпом отменяется. */
+/* По кнопкам, полям, ячейкам круга и клавишам мини-клавиатуры двойной
+   тап НЕ считается жестом открытия настроек — иначе панель выскакивала
+   бы при быстрых ответах (две ноты подряд, повторный тап по той же
+   ячейке и т.п.). Жест работает по «пустым» местам экрана: фон
+   страницы, поля вокруг круга, свободное место внутри его квадрата. */
+function isInteractiveTapTarget(el){
+  if(!el) return false;
+  if(typeof el.closest !== 'function') return true; // не Element (например, document) — не рискуем
+  return !!el.closest('#sidePanel, button, input, select, textarea, label, a, path, rect, circle, ellipse, polygon, polyline, line, text, [role="button"]');
+}
+
 document.addEventListener('touchstart', (e) => {
-  if(!isMobile) return;
-  sidePanelTouchStartY = (e.touches.length === 1) ? e.touches[0].clientY : null;
+  if(!isMobile){ dtapStart = null; return; }
+  if(e.touches.length !== 1){ dtapStart = null; dtapLastTime = 0; return; } // мультитач — это другой жест
+  const t = e.touches[0];
+  dtapStart = { x:t.clientX, y:t.clientY, time:Date.now(), target:e.target };
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
-  if(!isMobile || sidePanelTouchStartY === null) return;
-  if(e.touches.length > 0){ sidePanelTouchStartY = null; return; } // остался ещё палец — это не одиночный свайп
-  const endY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : sidePanelTouchStartY;
-  const dy = sidePanelTouchStartY - endY; // положительное — свайп вверх, отрицательное — вниз
-  /* Свайп ВВЕРХ открывает панель. Свайп ВНИЗ панель НЕ закрывает:
-     раньше любой скролл вниз (в том числе прокрутка самих настроек до
-     нижних строк) засчитывался как "закрыть" и панель схлопывалась.
-     Закрытие теперь только тапом за пределами окна настроек — по
-     затемнению фона (см. sidePanelBackdrop click ниже) или двумя
-     пальцами. */
-  if (dy > SWIPE_THRESHOLD) {
-    setSidePanelOpen(true);
+  if(!isMobile || !dtapStart) return;
+  const start = dtapStart;
+  dtapStart = null;
+  if(e.touches.length > 0){ dtapLastTime = 0; return; } // на экране остался ещё палец
+  const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+  if(!t) return;
+  const now = Date.now();
+  // отсеиваем всё, что не является коротким тапом на месте
+  if(now - start.time > DOUBLE_TAP_MAX_HOLD) { dtapLastTime = 0; return; }
+  if(Math.hypot(t.clientX - start.x, t.clientY - start.y) > DOUBLE_TAP_MAX_DIST) { dtapLastTime = 0; return; }
+  if(isInteractiveTapTarget(start.target)) { dtapLastTime = 0; return; }
+  if(now - dtapLastTime <= DOUBLE_TAP_MAX_DELAY &&
+     Math.hypot(t.clientX - dtapLastX, t.clientY - dtapLastY) <= DOUBLE_TAP_MAX_DIST){
+    dtapLastTime = 0; // жест засчитан, следующий тап начинает новый отсчёт
+    if(!isSidePanelOpen()) setSidePanelOpen(true);
+  } else {
+    dtapLastTime = now; dtapLastX = t.clientX; dtapLastY = t.clientY;
   }
-  sidePanelTouchStartY = null;
 }, { passive: true });
 
 /* =========================================================
@@ -10209,9 +10404,21 @@ document.addEventListener('touchcancel', () => {
    Ограничиваем ещё и по высоте, чтобы круг не обрезался сверху/снизу в
    альбомной ориентации. MOBILE_CIRCLE_MARGIN — отступ от краёв экрана. */
 const MOBILE_CIRCLE_MARGIN = 6; // px с каждой стороны
+const MOBILE_CIRCLE_H_WITH_PIANO = 0.58; // доля высоты экрана под круг, когда снизу стоит клавиатура
 function circleFitScale(){
   if(!isMobile) return 1;
-  const avail = Math.min(window.innerWidth, window.innerHeight) - MOBILE_CIRCLE_MARGIN*2;
+  /* Когда включена клавиатура под кругом (класс mobile-piano-on), круг
+     поднят вверх и под ним стоит клавиатура — значит по высоте ему
+     доступна не вся страница, а её верхняя часть. Иначе в альбомной
+     ориентации круг обрезался бы сверху, а клавиатура — снизу.
+     MOBILE_CIRCLE_H_WITH_PIANO — доля высоты экрана, которую занимает
+     круг в этом режиме (правьте здесь, если хочется круг крупнее/мельче). */
+  const availW = window.innerWidth - MOBILE_CIRCLE_MARGIN*2;
+  const heightLimit = document.body.classList.contains('mobile-piano-on')
+    ? window.innerHeight * MOBILE_CIRCLE_H_WITH_PIANO
+    : window.innerHeight;
+  const availH = heightLimit - MOBILE_CIRCLE_MARGIN*2;
+  const avail = Math.min(availW, availH);
   return Math.max(0.2, Math.min(1, avail / 480));
 }
 function updateCircleFitBox(){
@@ -11635,6 +11842,12 @@ document.addEventListener('keydown', (e)=>{
   }
 });
 
+// Первичная раскладка мобильного режима "круг вверх + клавиатура снизу":
+// вызывается в самом конце, когда все переменные настроек уже объявлены
+// (при более ранних вызовах updateMobilePianoLayout() они ещё в TDZ и
+// функция безопасно считает режим выключенным).
+updateMobilePianoLayout();
+updateMobilePianoGeometry();
 applyZoom();
 </script>
 <script>
