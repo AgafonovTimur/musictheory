@@ -655,11 +655,10 @@
   #sidePanel::-webkit-scrollbar{
     display:none;              /* Chrome/Safari: скрыть скроллбар, скролл работает */
   }
-  /* ===== Чекбокс "Настройки сбоку от круга" — своя, независимая
-     настройка для КАЖДОГО уровня (Практика 1/2/3, Обучение). Хранится
-     в localStorage отдельным ключом на каждый уровень (см. JS,
-     SIDE_PANEL_PIN_KEYS), поэтому включение на одном уровне никак не
-     влияет на остальные, и состояние переживает перезагрузку страницы. */
+  /* ===== Чекбокс "Отображать настройки" — ОДНА общая настройка для
+     всех вкладок (Ноты, Аккорды/Лады, Обучение). Хранится в localStorage
+     одним ключом (см. JS, SIDE_PANEL_PIN_KEY), поэтому выбранное
+     расположение одинаково на всех вкладках и переживает перезагрузку. */
   #sidePanelPinRow{
     display:flex;
     align-items:center;
@@ -9973,11 +9972,29 @@ function toggleSidePanel(){
    MIDI/ПК клавиатура используют один и тот же ключ, т.к. currentTopTab()
    возвращает 'p1' для practiceLevel 1 и 2 одинаково — см. currentTopTab()
    выше). Отдельного ключа p2 больше нет. */
+/* Одно общее расположение панели настроек для ВСЕХ вкладок: выбрали
+   "Слева / По центру / Справа" на любой из них — на остальных панель
+   встанет так же. Раньше у каждой вкладки был свой ключ, поэтому
+   выбор не переносился. Ключи оставлены на месте для переноса ранее
+   сохранённого значения (см. миграцию ниже). */
+const SIDE_PANEL_PIN_KEY = 'sidePanelPin_all';
+const SIDE_PANEL_PIN_LEGACY_KEYS = ['sidePanelPin_training', 'sidePanelPin_p1', 'sidePanelPin_p3'];
 const SIDE_PANEL_PIN_KEYS = {
-  p1: 'sidePanelPin_p1',
-  p3: 'sidePanelPin_p3',
-  training: 'sidePanelPin_training'
+  p1: SIDE_PANEL_PIN_KEY,
+  p3: SIDE_PANEL_PIN_KEY,
+  training: SIDE_PANEL_PIN_KEY
 };
+/* Разовый перенос: если общего ключа ещё нет, берём значение из старых
+   (приоритет — "Обучение", затем "Ноты", затем "Аккорды/Лады"). */
+(function migrateSidePanelPin(){
+  try{
+    if(localStorage.getItem(SIDE_PANEL_PIN_KEY) !== null) return;
+    for(const k of SIDE_PANEL_PIN_LEGACY_KEYS){
+      const v = localStorage.getItem(k);
+      if(v !== null){ localStorage.setItem(SIDE_PANEL_PIN_KEY, v); return; }
+    }
+  }catch(e){}
+})();
 // Три варианта расположения панели настроек: 'left' (сбоку слева, как
 // раньше "пришпилено"), 'right' (зеркально справа), 'center' — как по
 // умолчанию, всплывающим окном поверх круга (раньше это было просто
@@ -9993,7 +10010,7 @@ const trainCircleInnerEl = document.getElementById('trainCircleInner');
 const sidePanelHomeAnchor = sidePanelBackdrop;
 
 function getSidePanelPositionFor(tab){
-  const raw = localStorage.getItem(SIDE_PANEL_PIN_KEYS[tab]);
+  const raw = localStorage.getItem(SIDE_PANEL_PIN_KEY);
   if(raw === '1' || raw === 'left') return 'left';
   if(raw === 'right') return 'right';
   return 'center';
@@ -10152,18 +10169,17 @@ function updateSidePanelLayout(){
 }
 
 function setSidePanelPosition(position){
-  const tab = currentTopTab();
-  localStorage.setItem(SIDE_PANEL_PIN_KEYS[tab], position);
+  localStorage.setItem(SIDE_PANEL_PIN_KEY, position);
   updateSidePanelLayout();
   if(window.__appBridgeSend) window.__appBridgeSend({ type:'settingsPosition', value: position });
 }
 
-// применение языка и положения настроек, пришедших от оболочки:
-// положение ставим сразу на все вкладки, чтобы значение было общим с двумя другими приложениями
+/* Язык и положение панели настроек, пришедшие от оболочки (из соседних
+   приложений), применяются тем же путём, что и обычный клик пользователя. */
 window.__setUiLangExternal = function(lang){ applyLanguage(lang); };
 window.__setSettingsPositionExternal = function(position){
   if(position !== 'left' && position !== 'center' && position !== 'right') return;
-  Object.keys(SIDE_PANEL_PIN_KEYS).forEach(function(k){ localStorage.setItem(SIDE_PANEL_PIN_KEYS[k], position); });
+  localStorage.setItem(SIDE_PANEL_PIN_KEY, position);
   updateSidePanelLayout();
 };
 window.__appGetState = function(){
