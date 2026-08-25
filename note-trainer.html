@@ -58,7 +58,7 @@
 })();
 </script>
 
-<title>Заучивание нот и ритма</title>
+<title>Ноты и ритм</title>
 <style>
   :root{
     --bg: #161618;
@@ -1254,6 +1254,320 @@
     transform: translate(-50%, -50%) scale(var(--m-flow-scale, .62));
     transform-origin: center center;
   }
+
+  /* =====================================================================
+     ЕДИНЫЙ ДИЗАЙН НАСТРОЕК — всё взято из «Квинтового круга» (эталон):
+       панель ........ 520px, padding 14/18/18, radius 8, gap 10
+       кнопка ........ padding 9/4, шрифт 14px, radius 6, без рамки
+       кнопка в сетке  padding 9/2, шрифт 13px
+       верхние вкладки padding 10/4, шрифт 13px
+       заголовок ..... 16px жирный
+       строка с галкой шрифт 16px
+       чекбокс ....... 16x16, radius 3, серая заливка
+       select ........ 50% ширины, справа, padding 8/6, 13px
+       значок (i) .... 22px (в сетках 20px)
+       отступы ....... 8px в рядах, 10/8px в сетках
+     Цвета кнопок в тёмной теме — как в круге: #333333 / #D0D0D0 / #5a5a5a.
+     ===================================================================== */
+
+  :root{
+    --settings-width: 520px;
+    --settings-block-gap: 10px;
+  }
+
+  #settingsPanel{
+    padding:14px 18px 18px;
+    gap:10px;
+    border-radius:8px;
+    box-shadow:0 10px 30px rgba(0,0,0,.75);
+    font-family:var(--font-ui);
+    --set-btn-bg: var(--ui-bg);
+    --set-btn-text: var(--text-dim);
+    --set-btn-active-bg: var(--sel-bg);
+    --set-btn-active-text: var(--text-dim);
+    --set-title: var(--text-main);
+  }
+  [data-theme="1"] #settingsPanel{
+    --set-btn-bg:#333333;
+    --set-btn-text:#D0D0D0;
+    --set-btn-active-bg:#5a5a5a;
+    --set-btn-active-text:#D0D0D0;
+    --set-title:#D0D0D0;
+    background:#1e1e1e;
+    border-color:#333333;
+  }
+  [data-theme="5"] #settingsPanel{
+    --set-btn-active-text: var(--sel-text);
+  }
+  #settingsPanel .settings-block{ gap:10px; }
+
+  /* Одинаковое расстояние (10px) между ВСЕМИ блоками настроек, включая
+     первый блок подуровня после кнопок «Одна нота / Бесконечно».
+     Раньше между контейнером подуровня и его первым блоком отступа не было
+     вовсе, а между остальными он складывался из двух разных правил. */
+  #settingsPanel #noteSettingsBlocks,
+  #settingsPanel #scaleSettingsBlocks,
+  #settingsPanel #durationsRoot,
+  #settingsPanel #durSettingsBlocks,
+  #settingsPanel #nrSettingsBlocks{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  #settingsPanel .settings-block + .settings-block,
+  #settingsPanel .settings-position-row,
+  #settingsPanel .settings-position-row + .settings-block,
+  #settingsPanel .tight-gap-block{
+    margin-top:0;
+  }
+  #settingsPanel .tight-gap-block{ gap:10px; }
+  #settingsPanel .rh-hint{ margin-top:0; }
+  #settingsPanel .rh-check{ margin-top:0; }
+
+  /* ---- Заголовки блоков ---- */
+  /* как надпись «Вариант 1» в круге: 13px, жирный, основной цвет текста */
+  #settingsPanel h3,
+  #settingsPanel .panel-card h3{
+    font-size:13px;
+    font-weight:bold;
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--set-title);
+    line-height:1.25;
+  }
+  #settingsPanel .settings-block h3{ margin-bottom:0; }
+  #settingsPanel .h3-with-info{ gap:6px; }
+  #settingsPanel .rh-hint{ font-size:12px; }
+
+  /* ---- Кнопки ---- */
+  #settingsPanel .level-tabs button,
+  #settingsPanel .segmented button,
+  #settingsPanel .note-grid button,
+  #settingsPanel .scale-type-cell > button,
+  #settingsPanel .small-btn{
+    border:none;
+    border-radius:6px;
+    padding:9px 4px;
+    font-size:14px;
+    font-weight:normal;
+    line-height:1.2;
+    background:var(--set-btn-bg);
+    color:var(--set-btn-text);
+    box-shadow:none;
+    box-sizing:border-box;
+    min-width:0;
+    white-space:normal;
+    text-align:center;
+  }
+  #settingsPanel .level-tabs button.active,
+  #settingsPanel .segmented button.active,
+  #settingsPanel .note-grid button.active,
+  #settingsPanel .note-grid button.selected,
+  #settingsPanel .scale-type-cell > button.selected{
+    background:var(--set-btn-active-bg);
+    color:var(--set-btn-active-text);
+    box-shadow:none;
+  }
+  #settingsPanel .level-tabs button{
+    padding:10px 4px;
+    font-size:13px;
+    font-weight:500;
+  }
+  #settingsPanel .note-grid button{
+    padding:9px 2px;
+    font-size:13px;
+  }
+  #settingsPanel .scale-type-cell > button{
+    padding:9px 2px;
+    font-size:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #settingsPanel .small-btn{
+    width:100%;
+    align-self:stretch;
+  }
+  #settingsPanel .small-btn:active{
+    transform:none;
+    box-shadow:none;
+  }
+
+  /* ---- Отступы ---- */
+  /* Расстояние между кнопками уменьшено вдвое: по ширине и по высоте */
+  #settingsPanel .level-tabs{ gap:4px; margin-bottom:0; }
+  #settingsPanel .segmented{
+    background:transparent;
+    padding:0;
+    gap:5px;
+    border-radius:0;
+  }
+  #settingsPanel .seg-row{ gap:4px; }
+  #settingsPanel .note-grid{ gap:5px 4px; }
+  #settingsPanel .scale-types{
+    grid-template-columns:repeat(3, 1fr);
+    gap:5px 4px;
+  }
+  #settingsPanel .scale-type-cell{ gap:2px; }
+
+  /* ---- Количество колонок в сетках (по реальным спискам файла) ---- */
+  #settingsPanel #noteGrid{ grid-template-columns:repeat(7, 1fr); }
+  #settingsPanel #scaleTonicGrid{ grid-template-columns:repeat(6, 1fr); }
+  #settingsPanel #durGrid{ grid-template-columns:repeat(6, 1fr); }
+  #settingsPanel #nrTsGrid{ grid-template-columns:repeat(4, 1fr); }
+  #settingsPanel #nrTagGrid{ grid-template-columns:repeat(5, 1fr); }
+  #settingsPanel #nrMetroDivGrid{ grid-template-columns:repeat(5, 1fr); }
+
+  /* ---- Строки с галками ---- */
+  #settingsPanel .settings-block > label,
+  #settingsPanel .rh-check,
+  #settingsPanel .settings-position-option{
+    font-size:16px;
+    gap:8px;
+    margin-top:0;
+  }
+  #settingsPanel .settings-position-row{ gap:10px 12px; }
+  #settingsPanel .settings-position-title{ font-size:16px; color:var(--text-main); }
+
+  /* ---- Чекбокс ---- */
+  #settingsPanel input[type="checkbox"]{
+    width:16px;
+    height:16px;
+    border-radius:3px;
+  }
+  #settingsPanel input[type="checkbox"]:checked{
+    background:#5a5a5a;
+    border-color:#5a5a5a;
+  }
+  #settingsPanel input[type="checkbox"]:checked::after{
+    left:4px;
+    top:1px;
+    width:4px;
+    height:8px;
+    border-color:#fff;
+    border-width:0 2px 2px 0;
+  }
+  [data-theme="5"] #settingsPanel input[type="checkbox"]:checked{
+    background:#2f2f2f;
+    border-color:#2f2f2f;
+  }
+
+  /* ---- Слайдеры ---- */
+  #settingsPanel input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    height:4px;
+    border-radius:2px;
+    background:var(--set-btn-bg);
+    outline:none;
+    min-width:0;
+  }
+  #settingsPanel input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--set-btn-active-bg);
+    border:none;
+    cursor:pointer;
+  }
+  #settingsPanel input[type="range"]::-moz-range-thumb{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--set-btn-active-bg);
+    border:none;
+    cursor:pointer;
+  }
+
+  /* ---- Числовые поля и цветовые пикеры ---- */
+  #settingsPanel .range-field{
+    font-size:14px;
+    gap:8px;
+  }
+  #settingsPanel .range-field input[type="number"].range-number{
+    width:52px;
+    height:26px;
+    padding:2px 6px;
+    border-radius:6px;
+    font-size:13px;
+    text-align:right;
+    box-sizing:border-box;
+    background:var(--set-btn-bg);
+    color:var(--set-btn-text);
+  }
+  #settingsPanel #errorsPosXVal,
+  #settingsPanel #errorsPosYVal,
+  #settingsPanel #errorsScalePosXVal,
+  #settingsPanel #errorsScalePosYVal,
+  #settingsPanel #errorsDurPosXVal,
+  #settingsPanel #errorsDurPosYVal,
+  #settingsPanel #errorsMeasurePosXVal,
+  #settingsPanel #errorsMeasurePosYVal{
+    width:64px;
+  }
+  #settingsPanel .range-field input[type="color"]{
+    width:30px;
+    height:26px;
+    border-radius:6px;
+  }
+
+  /* ---- Выпадающие списки ---- */
+  #settingsPanel .theme-row{
+    gap:8px;
+    margin-top:0;
+  }
+  #settingsPanel .theme-row span{ font-size:16px; color:var(--text-main); }
+  #settingsPanel .midi-select-line{ gap:8px; }
+  #settingsPanel .midi-select-line span{ font-size:16px; color:var(--text-main); }
+  #settingsPanel .theme-row select,
+  #settingsPanel .midi-select{
+    flex:0 0 50%;
+    width:50%;
+    max-width:50%;
+    margin-left:auto;
+    padding:8px 6px;
+    border:none;
+    border-radius:6px;
+    font-size:13px;
+    box-sizing:border-box;
+    background:var(--set-btn-bg);
+    color:var(--set-btn-text);
+  }
+  #settingsPanel .midi-status{ font-size:14px; }
+  #settingsPanel .midi-row{ gap:10px; }
+
+  /* ---- Значок подсказки (i) ---- */
+  #settingsPanel .info-icon{
+    width:22px;
+    height:22px;
+    font-size:13px;
+    font-style:italic;
+    font-weight:700;
+    background:var(--set-btn-bg);
+    color:var(--set-btn-text);
+  }
+  #settingsPanel .scale-type-cell > .info-icon{
+    width:20px;
+    height:20px;
+    font-size:11px;
+    background:var(--set-btn-bg);
+    color:var(--set-btn-text);
+  }
+
+  /* ---- Мобильный режим ---- */
+  body.mobile-mode #settingsPanel{
+    width:min(100vw - 16px, 520px);
+    max-height:96vh;
+    padding:12px 10px 14px;
+    border-radius:8px;
+  }
+  body.mobile-mode #settingsPanel #noteGrid{ grid-template-columns:repeat(4, 1fr); }
+  body.mobile-mode #settingsPanel #scaleTonicGrid{ grid-template-columns:repeat(4, 1fr); }
+  body.mobile-mode #settingsPanel #durGrid{ grid-template-columns:repeat(3, 1fr); }
+  body.mobile-mode #settingsPanel #nrTagGrid{ grid-template-columns:repeat(3, 1fr); }
+  body.mobile-mode #settingsPanel .scale-types{ grid-template-columns:repeat(3, 1fr); }
 </style>
 </head>
 <body>
@@ -1733,7 +2047,7 @@
         <input type="range" id="nrMetroVolume"><input type="number" class="range-number" id="nrMetroVolumeVal">
       </div>
       <label class="rh-check"><input type="checkbox" id="nrMetroPlay"> <span data-i18n="chk_metro_during">Метроном во время ритма</span></label>
-      <div class="rh-hint" style="margin-top:10px" data-i18n="lbl_metro_division">Дробление метронома</div>
+      <div class="rh-hint" data-i18n="lbl_metro_division">Дробление метронома</div>
       <div class="note-grid" id="nrMetroDivGrid"></div>
     </div>
     <div class="settings-block">
@@ -2763,7 +3077,7 @@
     errors_title_scales: { ru: "Ошибки — Тональности / Лады (Q / Й)", en: "Errors — Keys / Scales (Q)", zh: "错误 — 调式（Q键）" },
     errors_title_durations: { ru: "Ошибки — Ритм (Q / Й)", en: "Errors — Rhythm (Q)", zh: "错误 — 节奏（Q键）" },
     errors_title_flow: { ru: "Статистика — Ритм: Бесконечно (Q / Й)", en: "Stats — Rhythm: Infinite (Q)", zh: "统计 — 节奏：无限模式（Q键）" },
-    page_title: { ru: "Заучивание нот и ритма", en: "Learning notes and rhythm", zh: "学习音符与节奏" },
+    page_title: { ru: "Ноты и ритм", en: "Notes and rhythm", zh: "音符与节奏" },
     nrflow_info_text: { ru: "Для ответа нажимать на нотный стан в любом месте, или пробел на клавиатуре, или любую клавишу на MIDI-клавиатуре.", en: "To answer, click anywhere on the staff, press Space, or press any key on a MIDI keyboard.", zh: "作答方式：点击五线谱任意位置、按空格键，或按下 MIDI 键盘上的任意键。" },
 
     naming_solfege: { ru: "До Ре Ми", en: "Do Re Mi", zh: "首调唱名" },
@@ -3178,26 +3492,66 @@
   // нажатия работают как раньше. Жест засчитывается, только если пальцы почти не
   // сдвинулись (иначе это масштабирование/прокрутка) и касание было коротким.
   let multiTap = null;
-  const MULTI_TAP_MOVE = 25;   // px — больше этого считаем движением, а не тапом
-  const MULTI_TAP_TIME = 400;  // мс — дольше этого уже не тап
+  const MULTI_TAP_MOVE = 25;    // px — больше этого считаем движением, а не тапом
+  const MULTI_TAP_TIME = 800;   // мс — дольше этого уже не тап
+  const MULTI_TAP_PINCH = 20;   // px — изменение расстояния между пальцами: щипок, а не тап
+  const MULTI_TAP_SCALE = 0.05; // 5% — изменение масштаба страницы за время жеста: зум, а не тап
+
+  /* Текущий масштаб страницы (pinch-to-zoom браузера). Сравнивается начало
+     жеста с концом, а НЕ со 100%: если страница уже была увеличена и во
+     время тапа масштаб не менялся — тап засчитывается как обычно. */
+  function multiTapScale(){
+    return (window.visualViewport && window.visualViewport.scale) || 1;
+  }
+
   function multiTapTrack(touches){
     for(const t of touches){
       if(!(t.identifier in multiTap.start)) multiTap.start[t.identifier] = { x: t.clientX, y: t.clientY };
+      multiTap.last[t.identifier] = { x: t.clientX, y: t.clientY };
+    }
+  }
+
+  /* Максимальное расстояние между парой пальцев — «размах». Если размах в
+     начале и в конце жеста заметно разный, пальцы сводили или разводили. */
+  function multiTapSpread(map){
+    const pts = Object.values(map);
+    let max = 0;
+    for(let i = 0; i < pts.length; i++){
+      for(let j = i + 1; j < pts.length; j++){
+        max = Math.max(max, Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y));
+      }
+    }
+    return max;
+  }
+
+  /* Проверка «жест сдвинулся». Вызывается и на touchmove, и на touchend по
+     changedTouches: во время системного зума браузер может вообще перестать
+     присылать touchmove, и тогда единственные достоверные координаты
+     приходят в момент отрыва пальцев. */
+  function multiTapCheckMoved(touches){
+    if(!multiTap) return;
+    for(const t of touches){
+      multiTap.last[t.identifier] = { x: t.clientX, y: t.clientY };
+      const s = multiTap.start[t.identifier];
+      if(!s) continue;
+      if(Math.hypot(t.clientX - s.x, t.clientY - s.y) > MULTI_TAP_MOVE) multiTap.moved = true;
+    }
+    if(Object.keys(multiTap.start).length >= 2 && Object.keys(multiTap.last).length >= 2){
+      if(Math.abs(multiTapSpread(multiTap.last) - multiTapSpread(multiTap.start)) > MULTI_TAP_PINCH){
+        multiTap.moved = true;
+      }
     }
   }
   document.addEventListener("touchstart", (e) => {
     if(e.touches.length < 2) return;
-    if(!multiTap) multiTap = { t0: Date.now(), max: 0, moved: false, start: {} };
+    if(!multiTap) multiTap = { t0: Date.now(), max: 0, moved: false, start: {}, last: {}, scale0: multiTapScale() };
     multiTap.max = Math.max(multiTap.max, e.touches.length);
     multiTapTrack(e.touches);
   }, { passive: true });
   document.addEventListener("touchmove", (e) => {
     if(!multiTap) return;
-    for(const t of e.touches){
-      const s = multiTap.start[t.identifier];
-      if(!s) continue;
-      if(Math.hypot(t.clientX - s.x, t.clientY - s.y) > MULTI_TAP_MOVE){ multiTap.moved = true; return; }
-    }
+    multiTapTrack(e.touches);
+    multiTapCheckMoved(e.touches);
   }, { passive: true });
   // Закрепление подсказки (на ПК — клавиша T / Е, на телефоне — тап четырьмя пальцами).
   // На уровнях длительностей подсказки нет, поэтому там жест ничего не делает.
@@ -3212,7 +3566,12 @@
   }
 
   document.addEventListener("touchend", (e) => {
-    if(!multiTap || e.touches.length > 0) return;
+    if(!multiTap) return;
+    // последний достоверный замер координат отрывающихся пальцев
+    multiTapCheckMoved(e.changedTouches);
+    if(e.touches.length > 0) return;
+    // масштаб страницы изменился за время жеста — это зум, а не тап
+    if(Math.abs(multiTapScale() - multiTap.scale0) > MULTI_TAP_SCALE) multiTap.moved = true;
     const st = multiTap;
     multiTap = null;
     if(st.moved || Date.now() - st.t0 > MULTI_TAP_TIME) return;
@@ -3221,6 +3580,79 @@
     else if(st.max >= 4) togglePinnedHint();
   }, { passive: true });
   document.addEventListener("touchcancel", () => { multiTap = null; }, { passive: true });
+
+  /* Safari/iOS присылает собственные события масштабирования двумя пальцами.
+     Если они пришли — это точно щипок, а не тап. */
+  ["gesturestart","gesturechange","gestureend"].forEach(evt => {
+    document.addEventListener(evt, () => { if(multiTap) multiTap.moved = true; }, { passive: true });
+  });
+
+  /* Android/Chrome таких событий не присылает, а масштаб может «доехать» уже
+     после отрыва пальцев — поэтому следим ещё и за visual viewport. */
+  if(window.visualViewport){
+    const multiTapViewportCheck = () => {
+      if(!multiTap) return;
+      if(Math.abs(multiTapScale() - multiTap.scale0) > MULTI_TAP_SCALE) multiTap.moved = true;
+    };
+    window.visualViewport.addEventListener("resize", multiTapViewportCheck, { passive: true });
+    window.visualViewport.addEventListener("scroll", multiTapViewportCheck, { passive: true });
+  }
+
+  /* ---- Слайдеры и многопальцевые жесты ----
+     Ползунки (input[type=range]) реагируют на каждое касание отдельно, поэтому
+     при тапе двумя пальцами они успевали изменить значение. Здесь ползунок
+     обслуживает только первый палец: если появляется второй (где угодно на
+     экране), значение возвращается к тому, что было до касания, и дальнейшее
+     перетаскивание игнорируется до полного отрыва пальцев. */
+  let rangeTouch = null;
+
+  function rangeSliderAt(target){
+    return (target && target.closest) ? target.closest('input[type="range"]') : null;
+  }
+  function rangeRestore(){
+    if(!rangeTouch) return;
+    const node = rangeTouch.node;
+    if(node.value !== rangeTouch.value){
+      node.value = rangeTouch.value;
+      node.dispatchEvent(new Event("input", { bubbles: true }));
+      node.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+  document.addEventListener("touchstart", (e) => {
+    const node = rangeSliderAt(e.target);
+    if(node){
+      // второй палец на ползунке — не даём ему перехватить касание
+      if(e.touches.length > 1 || (rangeTouch && rangeTouch.node !== node)){
+        e.preventDefault();
+        if(rangeTouch){ rangeTouch.cancelled = true; rangeRestore(); }
+        return;
+      }
+      rangeTouch = { node, value: node.value, cancelled: false };
+      return;
+    }
+    // палец лёг в другом месте, пока удерживается ползунок — отменяем правку
+    if(rangeTouch && e.touches.length > 1){
+      rangeTouch.cancelled = true;
+      rangeRestore();
+    }
+  }, { passive: false, capture: true });
+
+  document.addEventListener("touchmove", (e) => {
+    if(!rangeTouch || !rangeTouch.cancelled) return;
+    if(e.cancelable) e.preventDefault();
+    rangeRestore();
+  }, { passive: false, capture: true });
+
+  document.addEventListener("touchend", (e) => {
+    if(!rangeTouch) return;
+    if(rangeTouch.cancelled) rangeRestore();
+    if(e.touches.length === 0) rangeTouch = null;
+  }, { capture: true });
+
+  document.addEventListener("touchcancel", () => {
+    if(rangeTouch && rangeTouch.cancelled) rangeRestore();
+    rangeTouch = null;
+  }, { capture: true });
 
   // ================= НОТНАЯ ЛОГИКА =================
   function noteFromStep(step, clef){

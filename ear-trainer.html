@@ -1429,6 +1429,314 @@
     }
   }
 
+
+  /* =====================================================================
+     ЕДИНЫЙ ДИЗАЙН НАСТРОЕК — всё взято из «Квинтового круга» (эталон):
+       панель ........ 520px, padding 14/18/18, radius 8, gap 10
+       кнопка ........ padding 9/4, шрифт 14px, radius 6, без рамки
+       кнопка в сетке  padding 9/2, шрифт 13px
+       верхние вкладки padding 10/4, шрифт 13px
+       заголовок ..... 16px жирный
+       строка с галкой шрифт 16px
+       чекбокс ....... 16x16, radius 3, серая заливка
+       select ........ 50% ширины, справа, padding 8/6, 13px
+       значок (i) .... 22px
+       отступы ....... 8px в рядах, 10/8px в сетках
+     Цвета кнопок в тёмной теме — как в круге: #333333 / #D0D0D0 / #5a5a5a.
+     Кнопки «Выбрать все» / «Снять всё» остаются текстовыми, цветом темы.
+     ===================================================================== */
+
+  .menu-panel.right-panel{
+    width:520px;
+    padding:14px 18px 18px;
+    border-radius:8px;
+    gap:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.75);
+  }
+
+  #right-panel{
+    --set-btn-bg: var(--chip-bg);
+    --set-btn-text: var(--chip-text);
+    --set-btn-active-bg: var(--chip-selected-bg);
+    --set-btn-active-text: var(--chip-text);
+    --set-title: var(--fg-text);
+  }
+  [data-theme="1"] #right-panel{
+    --set-btn-bg:#333333;
+    --set-btn-text:#D0D0D0;
+    --set-btn-active-bg:#5a5a5a;
+    --set-btn-active-text:#D0D0D0;
+    --set-title:#D0D0D0;
+    background-color:#1e1e1e;
+    border-color:#333333;
+  }
+  [data-theme="5"] #right-panel{
+    --set-btn-active-text: var(--chip-selected-text);
+  }
+
+  #right-panel .section,
+  #right-panel .section-block{
+    gap:10px;
+  }
+
+  /* ---- Заголовки блоков ---- */
+  /* как надпись «Вариант 1» в круге: 13px, жирный, основной цвет текста */
+  #right-panel .section-title,
+  #right-panel .label-with-info .field-label{
+    font-size:13px;
+    font-weight:bold;
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--set-title);
+    min-height:20px;
+  }
+  #right-panel .field-label{ font-size:16px; color:var(--set-title); font-weight:normal; }
+  #right-panel .hint-text{ font-size:12px; }
+  #right-panel .label-with-info{ gap:6px; }
+
+  /* ---- «Выбрать все» / «Снять всё» — цветом под тему ---- */
+  #right-panel .quick-actions-inline,
+  #right-panel .quick-actions-left{ gap:12px; }
+  #right-panel .text-btn{
+    color:var(--title-color);
+    font-size:13px;
+    text-decoration:none;
+    padding:0;
+    font-weight:normal;
+  }
+  #right-panel .text-btn:hover{
+    color:var(--fg-text);
+    text-decoration:underline;
+  }
+
+  /* ---- Кнопки ---- */
+  #right-panel .tab-btn,
+  #right-panel .segment-btn,
+  #right-panel .toggle-chip,
+  #right-panel .btn-action{
+    border:none;
+    border-radius:6px;
+    padding:9px 4px;
+    font-size:14px;
+    font-weight:normal;
+    line-height:1.2;
+    background-color:var(--set-btn-bg);
+    color:var(--set-btn-text);
+    box-shadow:none;
+    box-sizing:border-box;
+    min-width:0;
+    white-space:normal;
+    text-align:center;
+  }
+  #right-panel .tab-btn{
+    padding:10px 4px;
+    font-size:13px;
+    font-weight:500;
+  }
+  #right-panel .tab-btn:hover,
+  #right-panel .segment-btn:hover,
+  #right-panel .toggle-chip:hover,
+  #right-panel .btn-action:hover{
+    background-color:var(--chip-hover-bg);
+    color:var(--set-btn-text);
+  }
+  #right-panel .tab-btn.active,
+  #right-panel .segment-btn.active,
+  #right-panel .toggle-chip.selected{
+    background-color:var(--set-btn-active-bg);
+    color:var(--set-btn-active-text);
+    border:none;
+    box-shadow:none;
+    font-weight:600;
+  }
+  #right-panel .toggle-chip.correct,
+  #right-panel .toggle-chip.incorrect{
+    border:none !important;
+  }
+
+  /* ---- Сетки ---- */
+  /* Расстояние между кнопками по ширине уменьшено вдвое */
+  #right-panel .nav-tabs{
+    gap:4px;
+    margin-bottom:0;
+  }
+  #right-panel .segmented-control{ gap:4px; }
+  #right-panel .lang-row,
+  #right-panel .audio-output-row{ gap:4px; }
+
+  /* пианино: чёрные клавиши сверху между белыми (14 колонок) */
+  #right-panel .piano-grid{
+    column-gap:4px;
+    row-gap:10px;
+  }
+  #right-panel .piano-grid .toggle-chip{
+    height:auto;
+    padding:9px 2px;
+    font-size:13px;
+    display:block;
+  }
+  #right-panel .piano-grid .toggle-chip.black-key{
+    height:auto;
+    font-size:12px;
+  }
+
+  /* интервалы / аккорды / ширина — 3 колонки */
+  #right-panel .intervals-grid,
+  #right-panel .chords-grid{
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px 4px;
+  }
+  #right-panel .chords-grid .toggle-chip,
+  #right-panel .intervals-grid .toggle-chip{
+    width:auto;
+    height:auto;
+    padding:9px 2px;
+    font-size:13px;
+    display:block;
+  }
+  /* обращения — 4 колонки, направление интервала — 2 */
+  #right-panel #inversion-grid{ grid-template-columns:repeat(4, 1fr); }
+  #right-panel #direction-grid{ grid-template-columns:repeat(2, 1fr); }
+
+  /* октавы — 7 в ряд */
+  #right-panel .octaves-row{
+    display:grid;
+    grid-template-columns:repeat(7, 1fr);
+    gap:10px 4px;
+  }
+  #right-panel .octaves-row .toggle-chip{
+    flex:none;
+    padding:9px 2px;
+    font-size:13px;
+  }
+
+  /* ---- Строки с галками ---- */
+  #right-panel .checkbox-row{ gap:8px; }
+  #right-panel .checkbox-label{ font-size:16px; color:var(--fg-text); }
+  #right-panel .settings-position-row{ gap:8px 12px; }
+  #right-panel .settings-position-options{ gap:8px 12px; }
+  #right-panel .settings-position-option{ gap:8px; }
+
+  /* ---- Чекбокс ---- */
+  #right-panel .custom-checkbox{
+    width:16px;
+    height:16px;
+    border-radius:3px;
+  }
+  #right-panel .checkbox-row input:checked + .custom-checkbox{
+    background-color:#5a5a5a;
+    border-color:#5a5a5a;
+  }
+  #right-panel .checkbox-row input:checked + .custom-checkbox::after{
+    color:#fff;
+    font-size:11px;
+  }
+  [data-theme="5"] #right-panel .checkbox-row input:checked + .custom-checkbox{
+    background-color:#2f2f2f;
+    border-color:#2f2f2f;
+  }
+
+  /* ---- Слайдер громкости ---- */
+  #right-panel .volume-row{ gap:8px; margin-top:0; }
+  #right-panel .volume-slider{ height:4px; background:var(--set-btn-bg); }
+  #right-panel .volume-slider::-webkit-slider-thumb{
+    width:14px;
+    height:14px;
+    background:var(--set-btn-active-bg);
+  }
+  #right-panel .volume-slider::-moz-range-thumb{
+    width:14px;
+    height:14px;
+    border:none;
+    border-radius:50%;
+    background:var(--set-btn-active-bg);
+  }
+  #right-panel .volume-value{ font-size:14px; }
+
+  /* ---- Выпадающие списки и поля ---- */
+  #right-panel select{
+    padding:8px 28px 8px 10px;
+    border:none;
+    border-radius:6px;
+    font-size:13px;
+    box-sizing:border-box;
+    background-color:var(--set-btn-bg);
+    color:var(--set-btn-text);
+  }
+  #right-panel .theme-row{
+    gap:8px;
+    font-size:16px;
+    color:var(--fg-text);
+  }
+  #right-panel .theme-row select,
+  #right-panel .midiPanelRow select{
+    flex:0 0 50%;
+    width:50%;
+    max-width:50%;
+    margin-left:auto;
+  }
+  #right-panel .midiPanelRow{ gap:8px; }
+  #right-panel .midiPanelRow input[type="number"]{
+    padding:8px 6px;
+    border:none;
+    border-radius:6px;
+    font-size:13px;
+    box-sizing:border-box;
+    background-color:var(--set-btn-bg);
+    color:var(--set-btn-text);
+  }
+  #right-panel .midiPanel{ gap:10px; }
+  #right-panel .settings-box{
+    padding:14px;
+    gap:10px;
+    border-radius:8px;
+  }
+  [data-theme="1"] #right-panel .settings-box{
+    background-color:#1e1e1e;
+    border-color:#333333;
+  }
+  #right-panel #onlineFields{ gap:10px; }
+  #right-panel .field-group{ gap:8px; }
+  #right-panel .colormode-row{ gap:8px; }
+  #right-panel .colormode-row .segment-btn{
+    padding:9px 4px;
+    font-size:14px;
+  }
+  /* «Цвет ответа» и «Названия нот» — кнопки одной ширины (половина панели,
+     прижаты вправо, как выпадашка «Тема:» над ними) */
+  #right-panel .colormode-row .segmented-control{
+    flex:0 0 50%;
+    width:50%;
+    max-width:50%;
+    margin-left:auto;
+  }
+
+  /* ---- Значок подсказки (i) ---- */
+  #right-panel .info-icon{
+    width:22px;
+    height:22px;
+    border:none;
+    background:var(--set-btn-bg);
+    color:var(--set-btn-text);
+    font-size:13px;
+    font-style:italic;
+    font-weight:700;
+    font-family:inherit;
+  }
+
+  /* ---- Мобильный режим ---- */
+  @media (max-width: 900px){
+    .menu-panel.right-panel{
+      width:calc(100vw - 16px);
+      max-width:calc(100vw - 16px);
+      max-height:96vh;
+      padding:12px 10px 14px;
+      border-radius:8px;
+    }
+    #right-panel .intervals-grid,
+    #right-panel .chords-grid{ grid-template-columns:repeat(3, 1fr); }
+    #right-panel .octaves-row{ grid-template-columns:repeat(4, 1fr); }
+  }
 </style>
 </head>
 <body data-theme="1">
@@ -1511,9 +1819,9 @@
 
       <div class="section">
         <div class="nav-tabs" id="appSwitchBar">
-      <button class="tab-btn" data-switch-level="frameCircle" data-i18n="appSwitchCircle">Квинтовый круг</button>
-      <button class="tab-btn" data-switch-level="frameNotes" data-i18n="appSwitchNotes">Ноты</button>
-      <button class="tab-btn active" data-switch-level="frameEar" data-i18n="appSwitchEar">Слух</button>
+          <button class="tab-btn" data-switch-level="frameCircle" data-i18n="appSwitchCircle">Квинтовый круг</button>
+          <button class="tab-btn" data-switch-level="frameNotes" data-i18n="appSwitchNotes">Ноты</button>
+          <button class="tab-btn active" data-switch-level="frameEar" data-i18n="appSwitchEar">Слух</button>
         </div>
 
         <div class="nav-tabs" id="modeTabs">
@@ -4086,40 +4394,86 @@ window.EAR_TRAINER_CONFIG = {
     (function setupTwoFingerTap() {
       let candidate = false;      // сейчас идёт возможный тап двумя пальцами
       let startTime = 0;
-      let startPoints = null;
+      let startScale = 1;
+      let startPoints = null;     // стартовые координаты по identifier пальца
+      let lastPoints = null;      // последние известные координаты
       let suppressClickUntil = 0;
 
-      const MAX_TAP_MS = 400;     // максимум времени на тап
+      const MAX_TAP_MS = 800;     // максимум времени на тап
       const MAX_MOVE_PX = 20;     // допустимое смещение пальцев
+      const MAX_PINCH_PX = 20;    // изменение расстояния между пальцами: щипок, а не тап
+      const MAX_SCALE_DIFF = 0.05; // 5% — изменение масштаба страницы: зум, а не тап
+
+      /* Текущий масштаб страницы (pinch-to-zoom браузера). Сравнивается начало
+         жеста с концом, а НЕ со 100%: если страница уже была увеличена и во
+         время тапа масштаб не менялся — тап засчитывается как обычно. */
+      function currentScale() {
+        return (window.visualViewport && window.visualViewport.scale) || 1;
+      }
+
+      function trackPoints(touchList) {
+        for (let i = 0; i < touchList.length; i++) {
+          const t = touchList[i];
+          if (!(t.identifier in startPoints)) startPoints[t.identifier] = { x: t.clientX, y: t.clientY };
+          lastPoints[t.identifier] = { x: t.clientX, y: t.clientY };
+        }
+      }
+
+      /* Расстояние между двумя пальцами — «размах». Если размах в начале и в
+         конце жеста заметно разный, пальцы сводили или разводили. */
+      function spread(map) {
+        const pts = Object.values(map);
+        if (pts.length < 2) return 0;
+        return Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      }
+
+      /* Проверка «жест сдвинулся». Вызывается и на touchmove, и на touchend по
+         changedTouches: во время системного зума браузер может вообще перестать
+         присылать touchmove, и тогда единственные достоверные координаты
+         приходят в момент отрыва пальцев. */
+      function checkMoved(touchList) {
+        if (!candidate) return;
+        for (let i = 0; i < touchList.length; i++) {
+          const t = touchList[i];
+          lastPoints[t.identifier] = { x: t.clientX, y: t.clientY };
+          const s = startPoints[t.identifier];
+          if (!s) continue;
+          if (Math.hypot(t.clientX - s.x, t.clientY - s.y) > MAX_MOVE_PX) { candidate = false; return; }
+        }
+        if (Object.keys(startPoints).length >= 2 && Object.keys(lastPoints).length >= 2) {
+          if (Math.abs(spread(lastPoints) - spread(startPoints)) > MAX_PINCH_PX) { candidate = false; }
+        }
+      }
 
       document.addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
           candidate = true;
           startTime = Date.now();
-          startPoints = [
-            { x: e.touches[0].clientX, y: e.touches[0].clientY },
-            { x: e.touches[1].clientX, y: e.touches[1].clientY }
-          ];
+          startScale = currentScale();
+          startPoints = {};
+          lastPoints = {};
+          trackPoints(e.touches);
         } else if (e.touches.length > 2) {
           candidate = false;
         }
       }, { passive: true });
 
       document.addEventListener('touchmove', (e) => {
-        if (!candidate || !startPoints || e.touches.length !== 2) return;
-        for (let i = 0; i < 2; i++) {
-          const dx = e.touches[i].clientX - startPoints[i].x;
-          const dy = e.touches[i].clientY - startPoints[i].y;
-          if (Math.hypot(dx, dy) > MAX_MOVE_PX) { candidate = false; return; }
-        }
+        if (!candidate || !startPoints) return;
+        checkMoved(e.touches);
       }, { passive: true });
 
       document.addEventListener('touchend', (e) => {
+        if (!candidate) return;
+        // последний достоверный замер координат отрывающихся пальцев
+        checkMoved(e.changedTouches);
         if (!candidate) return;
         // Ждём, пока оба пальца оторвутся
         if (e.touches.length > 0) return;
         candidate = false;
         if (Date.now() - startTime > MAX_TAP_MS) return;
+        // масштаб страницы изменился за время жеста — это зум, а не тап
+        if (Math.abs(currentScale() - startScale) > MAX_SCALE_DIFF) return;
 
         // Гасим случайное нажатие кнопки/клавиши пианино под пальцами
         suppressClickUntil = Date.now() + 700;
@@ -4132,6 +4486,23 @@ window.EAR_TRAINER_CONFIG = {
       }, { passive: true });
 
       document.addEventListener('touchcancel', () => { candidate = false; }, { passive: true });
+
+      /* Safari/iOS присылает собственные события масштабирования двумя
+         пальцами. Если они пришли — это точно щипок, а не тап. */
+      ['gesturestart', 'gesturechange', 'gestureend'].forEach(evt => {
+        document.addEventListener(evt, () => { candidate = false; }, { passive: true });
+      });
+
+      /* Android/Chrome таких событий не присылает, а масштаб может «доехать»
+         уже после отрыва пальцев — поэтому следим ещё и за visual viewport. */
+      if (window.visualViewport) {
+        const viewportCheck = () => {
+          if (!candidate) return;
+          if (Math.abs(currentScale() - startScale) > MAX_SCALE_DIFF) candidate = false;
+        };
+        window.visualViewport.addEventListener('resize', viewportCheck, { passive: true });
+        window.visualViewport.addEventListener('scroll', viewportCheck, { passive: true });
+      }
 
       document.addEventListener('click', (e) => {
         if (Date.now() < suppressClickUntil) {
