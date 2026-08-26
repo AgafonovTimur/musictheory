@@ -456,11 +456,15 @@
     transform: translate(0, -50%);
   }
 
+  /* Надпись "Отображать настройки:" и 3 галки — в две строки: сверху
+     надпись, снизу галки со сдвигом вправо на 24px (как подпункты под
+     галкой в квинтовом круге). */
   .settings-position-row {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 16px;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 6px;
   }
 
   .settings-position-title {
@@ -471,6 +475,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px 16px;
+    margin-left: 24px;
   }
 
   #settingsBackdrop {
@@ -1527,6 +1532,11 @@
     min-width:0;
     white-space:normal;
     text-align:center;
+    /* надпись всегда по центру кнопки, даже если соседняя кнопка в ряду
+       переносится на две строки и ряд становится выше */
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
   #right-panel .tab-btn{
     padding:10px 4px;
@@ -1573,9 +1583,6 @@
     height:auto;
     padding:9px 2px;
     font-size:13px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
   }
   #right-panel .piano-grid .toggle-chip.black-key{
     height:auto;
@@ -1594,9 +1601,6 @@
     height:auto;
     padding:9px 2px;
     font-size:13px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
   }
   /* обращения — 4 колонки, направление интервала — 2 */
   #right-panel #inversion-grid{ grid-template-columns:repeat(4, 1fr); }
@@ -1612,15 +1616,12 @@
     flex:none;
     padding:9px 2px;
     font-size:13px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
   }
 
   /* ---- Строки с галками ---- */
   #right-panel .checkbox-row{ gap:8px; }
   #right-panel .checkbox-label{ font-size:16px; color:var(--fg-text); }
-  #right-panel .settings-position-row{ gap:8px 12px; }
+  #right-panel .settings-position-row{ gap:6px; }
   #right-panel .settings-position-options{ gap:8px 12px; }
   #right-panel .settings-position-option{ gap:8px; }
 

@@ -659,12 +659,16 @@
      всех вкладок (Ноты, Аккорды/Лады, Обучение). Хранится в localStorage
      одним ключом (см. JS, SIDE_PANEL_PIN_KEY), поэтому выбранное
      расположение одинаково на всех вкладках и переживает перезагрузку. */
+  /* Надпись и 3 галки идут В ДВЕ СТРОКИ, как у галки "Чёрточки" и её
+     подпунктов "Под кругом"/"Над кругом": сверху надпись, снизу галки
+     со сдвигом вправо на 24px. */
   #sidePanelPinRow{
     display:flex;
-    align-items:center;
+    flex-direction:column;
+    align-items:flex-start;
     align-self:flex-start;
-    flex-wrap:wrap;
-    gap:6px 12px;
+    flex-wrap:nowrap;
+    gap:6px;
     width:100%;
     font-size:16px;
     color:var(--app-text-color);
@@ -674,17 +678,61 @@
   .sidePanelPinLabel{
     flex:0 0 auto;
   }
-  /* Группа из 3 галок (Слева/По центру/Справа). Если надпись и галки не
-     помещаются в одну строку — flex-wrap переносит .sidePanelPinOptions
-     на новую строку под надписью; тогда добавляем такой же отступ
-     слева (24px), как у подпункта "Привязать тональность" под
-     "Показывать ступени аккорда" (#trainLockKeyRow). */
+  /* ===== Строки "Чёрточки" (прицел по центру круга) =====
+     У вкладок "Ноты" и "Аккорды/Лады" свои независимые настройки
+     (#crosshairRowP1 / #crosshairRowP3); на "Обучении" обе скрыты.
+     В строке: галка "Чёрточки", а строкой ниже со сдвигом вправо —
+     2 галки "Под кругом"/"Над кругом".
+     Нужная строка переносится по DOM сразу под строку "Отображать
+     настройки:" — см. updateCrosshairRowPosition() в скрипте ниже. */
+  .crosshairRow{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    align-self:flex-start;
+    gap:6px;
+    width:100%;
+    font-size:16px;
+    color:var(--app-text-color);
+    font-family:var(--font);
+    user-select:none;
+  }
+  .crosshairMainOption,
+  .crosshairPlaceOption{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex:0 0 auto;
+    cursor:pointer;
+  }
+  /* "Под кругом"/"Над кругом" — подпункты галки "Чёрточки", поэтому
+     идут строкой ниже и сдвинуты вправо на 24px, как "Скрыть ячейки
+     круга" под "Показывать клавиатуру" (#level3HideWedgesRow). */
+  .crosshairPlaceOptions{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:6px 14px;
+    margin-left:24px;
+  }
+  .crosshairRow input[type="checkbox"]{
+    flex:0 0 auto;
+    cursor:pointer;
+  }
+  /* Пока чёрточки выключены — выбор "под/над кругом" приглушён */
+  .crosshairRow.disabledPlace .crosshairPlaceOptions{
+    opacity:0.45;
+  }
+  /* Группа из 3 галок (Слева/По центру/Справа) — всегда строкой ниже
+     надписи и со сдвигом вправо на 24px, как подпункты "Под кругом"/
+     "Над кругом" под галкой "Чёрточки" (.crosshairPlaceOptions). */
   .sidePanelPinOptions{
     display:flex;
     align-items:center;
     flex-wrap:wrap;
     gap:6px 14px;
     flex:0 0 auto;
+    margin-left:24px;
   }
   #sidePanelPinRow.wrapped .sidePanelPinOptions{
     margin-left:24px;
@@ -1047,6 +1095,14 @@
     position:relative;
     width:480px;
     height:480px;
+  }
+  /* Чёрточки-прицел могут уходить ЗА пределы круга (параметр reach в
+     CROSSHAIR_CONFIG больше 240). Сам svg#circle — бокс 480x480, и по
+     умолчанию всё, что за его границей, обрезается, поэтому длинные лучи
+     не были видны. overflow:visible снимает это обрезание; на клики это
+     не влияет — слой чёрточек с pointer-events:none. */
+  #circle{
+    overflow:visible;
   }
   /* ===== Клавиатура-подсказка вкладки "Обучение" =====
      Лежит ВНУТРИ #trainCircleInner (см. HTML) — это его позиционирующий
@@ -2077,6 +2133,28 @@
        сбоку от круга" той вкладки, которая открыта (см.
        updateThemeRowPosition() в <script>), а на вкладке "Обучение"
        скрывается — там своя строка темы внутри #trainExtraSettings. -->
+  <!-- Строки "Чёрточки" — прицел по центру игрового круга. У каждой
+       вкладки СВОЯ настройка и своё сохранение: P1 — "Ноты",
+       P3 — "Аккорды/Лады". Рядом с галкой — выбор, рисовать прицел
+       под кругом (круг перекрывает чёрточки) или над ним. JS показывает
+       строку открытой вкладки и переносит её сразу под строку
+       "Отображать настройки:" (см. updateCrosshairRowPosition()).
+       На вкладке "Обучение" обе строки скрыты. -->
+  <div id="crosshairRowP1" class="crosshairRow" style="display:none;">
+    <label class="crosshairMainOption"><input type="checkbox" id="crosshairCheckboxP1"><span data-i18n="crosshairLabel">Чёрточки</span></label>
+    <div class="crosshairPlaceOptions">
+      <label class="crosshairPlaceOption"><input type="checkbox" id="crosshairBelowCheckboxP1"><span data-i18n="crosshairBelow">Под кругом</span></label>
+      <label class="crosshairPlaceOption"><input type="checkbox" id="crosshairAboveCheckboxP1"><span data-i18n="crosshairAbove">Над кругом</span></label>
+    </div>
+  </div>
+  <div id="crosshairRowP3" class="crosshairRow" style="display:none;">
+    <label class="crosshairMainOption"><input type="checkbox" id="crosshairCheckboxP3"><span data-i18n="crosshairLabel">Чёрточки</span></label>
+    <div class="crosshairPlaceOptions">
+      <label class="crosshairPlaceOption"><input type="checkbox" id="crosshairBelowCheckboxP3"><span data-i18n="crosshairBelow">Под кругом</span></label>
+      <label class="crosshairPlaceOption"><input type="checkbox" id="crosshairAboveCheckboxP3"><span data-i18n="crosshairAbove">Над кругом</span></label>
+    </div>
+  </div>
+
   <div class="themeSelectRow themeSelectRowPractice" id="themeSwitchRowPractice" style="display:none;">
     <span data-i18n="themeLabel">Тема оформления:</span>
     <select id="themeSelectPractice" class="themeSelectEl">
@@ -2697,6 +2775,40 @@ const CENTER_MODE_LABEL_SHORT = {
 };
 /* ========================================================= */
 
+/* =========================================================
+   НАСТРОЙКИ "ЧЁРТОЧЕК" (прицел в центре игрового круга —
+   вкладки "Ноты" и "Аккорды/Лады").
+   Чёрточки идут 4 лучами из центра круга: вверх, вниз, влево и
+   вправо — строго по центру и по горизонтали, и по вертикали.
+   Включаются галкой "Чёрточки" в настройках.
+   ВСЕ РАЗМЕРЫ МЕНЯЮТСЯ ЗДЕСЬ:
+     length    — ДЛИНА одной чёрточки
+     gap       — РАССТОЯНИЕ МЕЖДУ чёрточками
+     thickness — ТОЛЩИНА чёрточки
+     color     — ЦВЕТ чёрточек
+     innerRadius — РАДИУС ПУСТОЙ ЗОНЫ вокруг центра: внутри этого
+                 радиуса чёрточек нет вообще, первая начинается ровно
+                 на нём. Например innerRadius:50 и reach:370 — от
+                 центра до 50 пусто, с 50 до 370 идут чёрточки
+     reach     — до какого радиуса тянется прицел (240 — ровно до края
+                 круга, больше — лучи выходят за круг; обрезания нет,
+                 см. правило #circle{overflow:visible} в стилях)
+     belowCircle — true: прицел ПОД кругом (круг его перекрывает, видны
+                 только части лучей за пределами круга);
+                 false: прицел ПОВЕРХ круга (чёрточки рисуются по
+                 ячейкам, нота в центре всё равно сверху)
+   ========================================================= */
+const CROSSHAIR_CONFIG = {
+  length: 11,
+  gap: 25,
+  thickness: 1.6,
+  color: 'var(--app-text-color)',
+  opacity: 0.3,
+  innerRadius: 87,
+  reach: 257,
+  belowCircle: true
+};
+
 const CX = 240, CY = 240;
 
 const R0 = 95;
@@ -2850,6 +2962,9 @@ const I18N = {
   appSwitchNotes:      { ru:'Ноты', en:'Notes', zh:'音符' },
   appSwitchEar:        { ru:'Слух', en:'Ear', zh:'听觉' },
   sidePanelPin:        { ru:'Отображать настройки:', en:'Show settings:', zh:'显示设置：' },
+  crosshairLabel:      { ru:'Чёрточки', en:'Crosshair ticks', zh:'准星刻度' },
+  crosshairBelow:      { ru:'Под кругом', en:'Under circle', zh:'圆环下方' },
+  crosshairAbove:      { ru:'Над кругом', en:'Above circle', zh:'圆环上方' },
   sidePanelPinLeft:    { ru:'Слева', en:'Left', zh:'左侧' },
   sidePanelPinCenter:  { ru:'По центру', en:'Center', zh:'居中' },
   sidePanelPinRight:   { ru:'Справа', en:'Right', zh:'右侧' },
@@ -3230,6 +3345,113 @@ const level3HintLayer = el('g', {id:'level3HintLayer', style:'pointer-events:non
 svg.appendChild(level3HintLayer);
 
 svg.appendChild(el('circle', {cx:CX, cy:CY, r:R0-2, id:'centerCircle'}));
+
+/* ===== Слои "чёрточек" (прицел). =====
+   ПОД КРУГОМ / НАД КРУГОМ переключается в настройках галками
+   "Под кругом" / "Над кругом" рядом с галкой "Чёрточки" (у вкладок
+   "Ноты" и "Аккорды/Лады" — независимо друг от друга).
+     под кругом — ячейки круга закрывают прицел: чёрточки видны только
+                  в центральном круге и снаружи круга;
+     над кругом — чёрточки рисуются поверх ячеек.
+   В обоих режимах нота в центре остаётся сверху и не перечёркивается.
+   Слоя два, потому что в режиме "под кругом" чёрточки в центральном
+   круге должны быть ВИДНЫ (он тёмный и непрозрачный, иначе они бы
+   пропали), а чёрточки снаружи — лежать под ячейками:
+     crosshairLayerBottom — самый нижний слой (часть снаружи круга);
+     crosshairLayerTop    — над центральным кругом и ячейками, но под
+                            нотой в центре.
+   Значение belowCircle в CROSSHAIR_CONFIG — только положение по
+   умолчанию при самом первом запуске. Размеры/цвет — там же. ===== */
+const crosshairLayerBottom = el('g', {id:'crosshairLayer', style:'pointer-events:none;'});
+const crosshairLayerTop = el('g', {id:'crosshairLayerTop', style:'pointer-events:none;'});
+function placeCrosshairLayer(){
+  // нижний слой — первым потомком svg (ниже всего остального)
+  svg.insertBefore(crosshairLayerBottom, svg.firstChild);
+  // верхний слой — сразу после центрального круга, но до ноты в центре
+  const centerCircleEl = document.getElementById('centerCircle');
+  svg.insertBefore(crosshairLayerTop, centerCircleEl ? centerCircleEl.nextSibling : null);
+}
+placeCrosshairLayer();
+
+/* Строит чёрточки под текущий режим.
+   below = false ("над кругом") — все чёрточки идут в верхний слой.
+   below = true  ("под кругом") — чёрточки внутри центрального круга
+   идут в верхний слой (поэтому видны), чёрточки снаружи круга — в
+   нижний, а в полосе самих ячеек не рисуются вовсе: подсветка ячейки-
+   задания полупрозрачная, и чёрточки просвечивали бы сквозь неё. */
+function buildCrosshair(below){
+  const c = CROSSHAIR_CONFIG;
+  [crosshairLayerBottom, crosshairLayerTop].forEach(layer=>{
+    while(layer.firstChild) layer.removeChild(layer.firstChild);
+  });
+  // границы: край центрального круга и внешний край круга
+  const innerEdge = R0 - 2, outerEdge = R3;
+  // 4 направления из центра: вверх, вниз, влево, вправо (dx, dy)
+  const dirs = [[0,-1],[0,1],[-1,0],[1,0]];
+  const addLine = (layer, dx, dy, a, b)=>{
+    if(b - a <= 0.01) return;
+    layer.appendChild(el('line', {
+      x1: CX + dx*a, y1: CY + dy*a,
+      x2: CX + dx*b, y2: CY + dy*b,
+      stroke: c.color,
+      'stroke-width': c.thickness,
+      'stroke-linecap': 'butt',
+      opacity: c.opacity
+    }));
+  };
+  dirs.forEach(([dx,dy])=>{
+    // первая чёрточка начинается ровно на innerRadius — всё, что
+    // ближе к центру, остаётся пустым
+    let r = c.innerRadius;
+    while(r < c.reach){
+      const rEnd = Math.min(r + c.length, c.reach);
+      if(!below){
+        addLine(crosshairLayerTop, dx, dy, r, rEnd);
+      }else{
+        // часть внутри центрального круга — поверх него
+        addLine(crosshairLayerTop, dx, dy, r, Math.min(rEnd, innerEdge));
+        // часть снаружи круга — в самый нижний слой
+        addLine(crosshairLayerBottom, dx, dy, Math.max(r, outerEdge), rEnd);
+      }
+      r = rEnd + c.gap;
+    }
+  });
+}
+buildCrosshair(CROSSHAIR_CONFIG.belowCircle);
+
+/* Включение/выключение галкой "Чёрточки". У вкладок "Ноты" и
+   "Аккорды/Лады" настройка СВОЯ и хранится отдельным ключом, поэтому
+   включённые чёрточки в одной вкладке не включают их в другой. Круг у
+   обеих вкладок один и тот же, поэтому при переключении вкладки
+   применяется значение именно её галки. */
+const CROSSHAIR_KEY_P1 = 'circleCrosshairEnabledP1';
+const CROSSHAIR_KEY_P3 = 'circleCrosshairEnabledP3';
+const CROSSHAIR_BELOW_KEY_P1 = 'circleCrosshairBelowP1';
+const CROSSHAIR_BELOW_KEY_P3 = 'circleCrosshairBelowP3';
+let crosshairEnabledP1 = localStorage.getItem(CROSSHAIR_KEY_P1) === '1';
+let crosshairEnabledP3 = localStorage.getItem(CROSSHAIR_KEY_P3) === '1';
+// положение "под кругом": при первом запуске берётся из CROSSHAIR_CONFIG
+let crosshairBelowP1 = localStorage.getItem(CROSSHAIR_BELOW_KEY_P1) === null
+  ? !!CROSSHAIR_CONFIG.belowCircle : localStorage.getItem(CROSSHAIR_BELOW_KEY_P1) === '1';
+let crosshairBelowP3 = localStorage.getItem(CROSSHAIR_BELOW_KEY_P3) === null
+  ? !!CROSSHAIR_CONFIG.belowCircle : localStorage.getItem(CROSSHAIR_BELOW_KEY_P3) === '1';
+function applyCrosshairVisibility(){
+  // currentTopTab() объявлена ниже по файлу — на самом раннем вызове
+  // (при построении круга) её ещё нет, тогда просто считаем вкладку
+  // "Ноты"; правильное значение применится при первой же отрисовке
+  // панели настроек.
+  let tab = 'p1';
+  try{ tab = currentTopTab(); }catch(e){ tab = 'p1'; }
+  const on = tab === 'p3' ? crosshairEnabledP3 : crosshairEnabledP1;
+  const vis = (tab === 'training' || !on) ? 'none' : '';
+  crosshairLayerBottom.style.display = vis;
+  crosshairLayerTop.style.display = vis;
+  if(tab !== 'training'){
+    buildCrosshair(tab === 'p3' ? crosshairBelowP3 : crosshairBelowP1);
+  }
+}
+applyCrosshairVisibility();
+
 const centerText = el('text', {
   x:CX, y:CY, id:'centerNote',
   dy: CENTER_NOTE_CONFIG.verticalOffset + 'em',
@@ -10081,7 +10303,29 @@ function updateSidePanelPinRowPosition(){
   } else if(sidePanelPinRowEl.parentElement !== target || target.lastElementChild !== sidePanelPinRowEl){
     target.appendChild(sidePanelPinRowEl);
   }
+  updateCrosshairRowPosition(tab);
   updateThemeRowPosition(tab);
+}
+
+/* Строка-чекбокс "Чёрточки" — ставится сразу ПОД строкой "Отображать
+   настройки:" на вкладках "Ноты" и "Аккорды/Лады" (строка темы уходит
+   ниже неё). На вкладке "Обучение" скрывается — чёрточки есть только на
+   игровом круге. */
+function updateCrosshairRowPosition(tab){
+  const rowP1 = document.getElementById('crosshairRowP1');
+  const rowP3 = document.getElementById('crosshairRowP3');
+  if(!rowP1 || !rowP3 || !sidePanelPinRowEl) return;
+  rowP1.style.display = 'none';
+  rowP3.style.display = 'none';
+  applyCrosshairVisibility();
+  if(tab === 'training') return;
+  const row = tab === 'p3' ? rowP3 : rowP1;
+  row.style.display = 'flex';
+  const parent = sidePanelPinRowEl.parentElement;
+  if(!parent) return;
+  if(row.parentElement !== parent || sidePanelPinRowEl.nextElementSibling !== row){
+    parent.insertBefore(row, sidePanelPinRowEl.nextElementSibling);
+  }
 }
 
 /* Строка выбора темы для вкладок "Ноты" и "Аккорды/Лады" —
@@ -10098,8 +10342,15 @@ function updateThemeRowPosition(tab){
   row.style.display = 'flex';
   const parent = sidePanelPinRowEl.parentElement;
   if(!parent) return;
-  if(row.parentElement !== parent || sidePanelPinRowEl.nextElementSibling !== row){
-    parent.insertBefore(row, sidePanelPinRowEl.nextElementSibling);
+  // якорь — видимая строка "Чёрточки" (она идёт сразу под "Отображать
+  // настройки:"), а если её нет — сама строка "Отображать настройки:"
+  const crossRow = (tab === 'p3')
+    ? document.getElementById('crosshairRowP3')
+    : document.getElementById('crosshairRowP1');
+  const anchor = (crossRow && crossRow.parentElement === parent && crossRow.style.display !== 'none')
+    ? crossRow : sidePanelPinRowEl;
+  if(row.parentElement !== parent || anchor.nextElementSibling !== row){
+    parent.insertBefore(row, anchor.nextElementSibling);
   }
 }
 
@@ -10200,6 +10451,53 @@ if(sidePanelPinRightCheckbox){
     setSidePanelPosition(sidePanelPinRightCheckbox.checked ? 'right' : 'center');
   });
 }
+/* Галки "Чёрточки" и выбор "Под кругом"/"Над кругом". Настройки у
+   вкладок "Ноты" и "Аккорды/Лады" независимые, каждая сохраняется
+   своим ключом в localStorage. Две галки положения работают как
+   радиокнопки: включена всегда ровно одна. */
+function syncCrosshairRowUi(){
+  [['P1', ()=>crosshairEnabledP1, ()=>crosshairBelowP1],
+   ['P3', ()=>crosshairEnabledP3, ()=>crosshairBelowP3]].forEach(([suf, getOn, getBelow])=>{
+    const row   = document.getElementById('crosshairRow'+suf);
+    const main  = document.getElementById('crosshairCheckbox'+suf);
+    const below = document.getElementById('crosshairBelowCheckbox'+suf);
+    const above = document.getElementById('crosshairAboveCheckbox'+suf);
+    if(!row || !main || !below || !above) return;
+    main.checked  = getOn();
+    below.checked = getBelow();
+    above.checked = !getBelow();
+    row.classList.toggle('disabledPlace', !getOn());
+  });
+}
+
+function bindCrosshairControls(suf, key, belowKey, setOn, setBelow){
+  const main  = document.getElementById('crosshairCheckbox'+suf);
+  const below = document.getElementById('crosshairBelowCheckbox'+suf);
+  const above = document.getElementById('crosshairAboveCheckbox'+suf);
+  if(main){
+    main.addEventListener('change', ()=>{
+      setOn(main.checked);
+      localStorage.setItem(key, main.checked ? '1' : '0');
+      syncCrosshairRowUi();
+      applyCrosshairVisibility();
+    });
+  }
+  const setPlace = (isBelow)=>{
+    setBelow(isBelow);
+    localStorage.setItem(belowKey, isBelow ? '1' : '0');
+    syncCrosshairRowUi();
+    applyCrosshairVisibility();
+  };
+  if(below) below.addEventListener('change', ()=> setPlace(true));
+  if(above) above.addEventListener('change', ()=> setPlace(false));
+}
+
+bindCrosshairControls('P1', CROSSHAIR_KEY_P1, CROSSHAIR_BELOW_KEY_P1,
+  v=>{ crosshairEnabledP1 = v; }, v=>{ crosshairBelowP1 = v; });
+bindCrosshairControls('P3', CROSSHAIR_KEY_P3, CROSSHAIR_BELOW_KEY_P3,
+  v=>{ crosshairEnabledP3 = v; }, v=>{ crosshairBelowP3 = v; });
+syncCrosshairRowUi();
+
 window.addEventListener('resize', updateSidePanelPinRowWrap);
 // var хоистится с undefined с самого начала скрипта, поэтому ранний
 // вызов applyTopTabs() (до этой строчки) safely видит "false" вместо
