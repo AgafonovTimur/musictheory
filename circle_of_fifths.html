@@ -22,6 +22,9 @@
   // иначе три приложения зациклят пересылку одного и того же значения.
   window.__bridgeSuppress = false;
 
+  // Открыто ли сейчас это приложение в оболочке. Вне оболочки — всегда да.
+  window.__appIsActive = true;
+
   window.__appBridgeSend = function(msg){
     if(!inFrame || window.__bridgeSuppress) return;
     try { window.parent.postMessage(msg, '*'); } catch(e){}
@@ -52,6 +55,10 @@
     }
     if(d.type === 'settingsPosition'){
       applyExternal('__setSettingsPositionExternal', d.value);
+      return;
+    }
+    if(d.type === 'appVisibility'){
+      window.__appIsActive = !!d.active;
       return;
     }
     if(d.type === 'requestState'){
@@ -15441,6 +15448,11 @@ function onMidiMessage(event){
   const note = data[1];
   const velocity = data[2];
   if(status === 0x90 && velocity > 0){
+    // Квинтовый круг скрыт в оболочке (открыты «Ноты» или «Слух») —
+    // нажатия MIDI-клавиатуры здесь не обрабатываем, чтобы не звучал
+    // аккорд из «Обучения». Отпускание клавиш ниже обрабатывается всегда,
+    // чтобы уже звучащий аккорд не залипал.
+    if(window.__appIsActive === false) return;
     // Если это эхо нашей же ноты, только что отправленной в DAW через
     // виртуальный MIDI-порт (LoopMIDI/LoopBe и т.п.) — игнорируем.
     // Такие порты обычно видны браузеру одновременно и как выход, и
