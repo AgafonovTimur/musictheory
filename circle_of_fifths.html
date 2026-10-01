@@ -1046,6 +1046,31 @@
     letter-spacing:0.3px;
     font-family:var(--font);
   }
+  /* строка "Выберите лады" + кнопки порядка — по центру, кнопки справа
+     от заголовка; при нехватке места кнопки переносятся ниже */
+  #level3ModeHeader.modeHeaderRow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:6px 12px;
+  }
+  .modeOrderBtns{
+    display:flex;
+    gap:4px;
+  }
+  .modeOrderBtns .ringBtn{
+    flex:0 0 auto;
+    width:auto;
+    font-size:13px;
+    font-weight:normal;
+    letter-spacing:0;
+    padding:6px 14px;
+  }
+  /* строка "Выберите лад" в "Обучении" — на всю ширину сетки ладов */
+  #trainModeHeaderRow{
+    grid-column:1 / -1;
+  }
   #level3ModeHeader{
     font-size:16px;
     color:var(--header-text);
@@ -1869,6 +1894,13 @@
     align-self:stretch;
     gap:10px;
   }
+  #level3NameModeBox{
+    display:flex;
+    flex-direction:column;
+    align-self:stretch;
+    gap:10px;
+  }
+  #level3NameModeBox label,
   #level3ExtraSettings label{
     display:flex;
     align-items:center;
@@ -1881,6 +1913,7 @@
     color:var(--app-text-color);
     cursor:pointer;
   }
+  #level3NameModeBox input[type="checkbox"],
   #level3ExtraSettings input[type="checkbox"]{
     cursor:pointer;
   }
@@ -2289,7 +2322,7 @@
      ("Миксолидийский") без переноса кнопки на две строки. */
   /* Галка "Показать стрелкой диезы\бемоли" — внутри сетки ладов,
      отдельной строкой на всю ширину под кнопками ладов. */
-  #trainKeySigArcRow, #trainRealModeNotesRow{
+  #trainKeySigArcRow, #trainRealModeNotesRow, #trainMusicRulesRow{
     grid-column:1 / -1;
     display:flex;
     align-items:center;
@@ -2300,7 +2333,7 @@
     color:var(--app-text-color);
     cursor:pointer;
   }
-  #trainKeySigArcRow input, #trainRealModeNotesRow input{ cursor:pointer; }
+  #trainKeySigArcRow input, #trainRealModeNotesRow input, #trainMusicRulesRow input{ cursor:pointer; }
   /* Галка "Показать drop2 и 3" — строкой на всю ширину под m(Maj13) */
   #trainShowDropsRow{
     grid-column:1 / -1;
@@ -2548,6 +2581,154 @@
   /* Разделительная черта между частями подсказки (в тексте подсказки
      части разделяются пустой строкой "\n\n"). Черта всегда во всю ширину
      подсказки. Цвет — цвет текста подсказки, яркость — opacity. */
+  /* ===== Подсказка-схема ладов ("Выберите лад" в "Обучении") =====
+     Кружки с подписями и линии между ними (SVG, не картинка).
+     Открывается по клику на "?" отдельным окном (#modesSchemePopup).
+     --modes-scheme-width : ширина схемы
+     Цвета: кружки — var(--btn-bg)/var(--btn-text), линии и знаки
+     ♭/♯ — var(--tip-formula-red). */
+  #modesSchemePopup{
+    --modes-scheme-width:1600px;
+    display:none;
+    position:fixed;
+    max-width:96vw;
+    background:var(--tooltip-bg, #222);
+    color:var(--tooltip-text, #fff);
+    padding:10px 12px;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.45);
+    z-index:10000;
+  }
+  #trainModeSchemeIcon{ cursor:pointer; }
+  /* значки (i) "где используется" у кружков схемы */
+  #modesSchemePopup .modesSchemeInfo{
+    position:absolute;
+    transform:translate(-50%,-50%);
+  }
+  #globalInfoTooltip.tipOverScheme{ z-index:10004; }
+  /* значок в кружке — фон темнее кружка, чтобы был виден */
+  #modesSchemePopup .modesSchemeInfo{ background:var(--tooltip-bg, #222); }
+  /* список жанров/стран и подсветка выбранных ладов
+     --modes-genre-dim   — яркость остальных ладов (0 = не видно, 1 = как обычно)
+     --modes-genre-color — цвет обводки подсвеченных ладов */
+  #modesSchemePopup{ --modes-genre-dim:0.25; --modes-genre-color:rgb(110, 200, 255); }
+  /* пояснение под списком жанров: кружок с зелёной обводкой — основные лады */
+  #modesSchemePopup .modesSchemeLegend{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font);
+    font-size:14px;
+    opacity:0.85;
+    margin:0 4px 6px 0;
+  }
+  #modesSchemePopup .modesSchemeLegendDot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    border:3px solid;
+    box-sizing:border-box;
+    background:var(--btn-bg);
+  }
+  /* строка со списком жанров и кнопкой "Сбросить" — справа */
+  #modesSchemePopup .modesSchemeGenreRow{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:6px;
+    margin:0 4px 6px 0;
+  }
+  #modesSchemePopup .modesSchemeGenreRow .modesSchemeGenreSelect{ margin:0; }
+  #modesSchemePopup .modesSchemeGenreReset{
+    font-family:var(--font);
+    font-size:14px;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    border:none;
+    border-radius:6px;
+    padding:5px 10px;
+    cursor:pointer;
+  }
+  #modesSchemePopup .modesSchemeGenreSelect{
+    font-family:var(--font);
+    font-size:14px;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    border:none;
+    border-radius:6px;
+    padding:5px 8px;
+    margin:0 0 6px 4px;
+    cursor:pointer;
+  }
+  #modesSchemePopup svg g[data-mode], #modesSchemePopup svg line,
+  #modesSchemePopup .modesSchemeInfo{ transition:opacity .15s; }
+  #modesSchemePopup svg.schemeGenreOn g[data-mode],
+  #modesSchemePopup svg.schemeGenreOn line,
+  #modesSchemePopup .schemeGenreOn .modesSchemeInfo{ opacity:var(--modes-genre-dim); }
+  #modesSchemePopup svg.schemeGenreOn g[data-mode].schemeGenreHit,
+  #modesSchemePopup .schemeGenreOn .modesSchemeInfo.schemeGenreHit{ opacity:1; }
+  #modesSchemePopup svg.schemeGenreOn g.schemeGenreHit circle{
+    stroke:var(--modes-genre-color);
+    stroke-opacity:1;
+    stroke-width:4;
+  }
+  /* пометка над схемой: "информация взята из интернета" */
+  #modesSchemePopup .modesSchemeNote{
+    font-family:var(--font);
+    font-size:14px;
+    opacity:0.7;
+    margin:0 0 6px 4px;
+  }
+  #modesSchemePopup .modesSchemeNote{ display:block; text-align:right; margin-right:4px; }
+  /* на телефоне кнопку "?" нажать нельзя */
+  body.is-mobile #trainModeSchemeIcon{ pointer-events:none; }
+  /* Окошко с 2 клавиатурами при наведении на кружок лада:
+     сверху — C мажор или C минор (с чем сравнивается лад), снизу — лад. */
+  #modesSchemeKeys{
+    display:none;
+    position:fixed;
+    background:var(--tooltip-bg, #222);
+    padding:10px;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.45);
+    z-index:10003;
+    pointer-events:none;
+  }
+  #modesSchemeKeys svg{ display:block; }
+  /* Затемнение ВСЕГО экрана при наведении на кружок лада: видно только
+     этот кружок (его копия #modesSchemeFocus поверх затемнения) и окошко
+     с клавиатурами; остальное — схема, круг, настройки — затемнено.
+     --modes-scheme-shade — сила затемнения: 0 = без затемнения,
+     1 = полностью чёрный. */
+  #modesSchemeShade{
+    --modes-scheme-shade:0.6;
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,var(--modes-scheme-shade));
+    z-index:10001;
+    pointer-events:none;
+  }
+  #modesSchemeFocusIcon{
+    display:none;
+    position:fixed;
+    z-index:10002;
+    pointer-events:none;
+  }
+  #modesSchemeFocus{
+    display:none;
+    position:fixed;
+    z-index:10002;
+    pointer-events:none;
+    overflow:visible;
+  }
+  #modesSchemePopup svg{
+    display:block;
+    width:var(--modes-scheme-width);
+    max-width:calc(96vw - 24px);
+    height:auto;
+  }
   .tipDivider{
     border-top:1px solid currentColor;
     opacity:0.35;
@@ -3295,7 +3476,19 @@
            нужно найти на круге все ноты выбранного лада: тоника — зелёным,
            остальные верные ноты — цветом терции (жёлтый), неверная нота
            мигает красным (см. onWedgeClickLevel3/pickNewModeL3 в <script>). ===== -->
-      <div id="level3ModeHeader" data-i18n="modeTypeHeader">Выберите лады</div>
+      <!-- Заголовок "Выберите лады" + 2 кнопки порядка ладов справа от него:
+           "Классический" (Ионийский, Дорийский, Фригийский, Лидийский,
+           Миксолидийский, Эолийский, Локрийский) и "От светлого к тёмному"
+           (Лидийский, Ионийский, Миксолидийский, Дорийский, Эолийский,
+           Фригийский, Локрийский). Меняется только расположение кнопок
+           ладов (см. MODE_ORDERS / applyModeOrder в <script>). -->
+      <div id="level3ModeHeader" class="modeHeaderRow">
+        <span data-i18n="modeTypeHeader">Выберите лады</span>
+        <div class="modeOrderBtns" id="level3ModeOrderBtns">
+          <button class="ringBtn" type="button" data-order="classic" data-i18n="modeOrderClassic">Классический</button>
+          <button class="ringBtn" type="button" data-order="light" data-i18n="modeOrderLight">От светлого к тёмному</button>
+        </div>
+      </div>
       <div id="level3ModeButtons" class="chordGridCard cols3 cofBox">
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLydianBtn" type="button" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
@@ -3335,6 +3528,15 @@
         </div>
       </div>
 
+      <!-- "Назови аккорд/лад" — отдельной рамкой сразу под ладами
+           (раньше стоял первой строкой в #level3ExtraSettings) -->
+      <div id="level3NameModeBox" class="cofBox">
+        <div id="level3NameModeRow">
+          <label><input type="checkbox" id="level3NameModeCheckbox"><span data-i18n="nameChordMode">Назови аккорд/лад</span></label>
+          <span class="infoIcon" data-i18n-tip="tipNameMode" data-tip="Отображается аккорд или лад. Нужно выбрать из предложенных вариантов.">i</span>
+        </div>
+      </div>
+
       <div id="selectHeader3" data-i18n="selectHeader">Выберите ноты</div>
       <div class="cofBox cofBoxCol">
       <div id="selectButtons3">
@@ -3347,10 +3549,6 @@
       </div>
       </div>
       <div id="level3ExtraSettings" class="cofBox">
-        <div id="level3NameModeRow">
-          <label><input type="checkbox" id="level3NameModeCheckbox"><span data-i18n="nameChordMode">Назови аккорд/лад</span></label>
-          <span class="infoIcon" data-i18n-tip="tipNameMode" data-tip="Отображается аккорд или лад. Нужно выбрать из предложенных вариантов.">i</span>
-        </div>
         <label><input type="checkbox" id="level3ShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
         <label id="level3HideWedgesRow"><input type="checkbox" id="level3HideWedgesCheckbox"><span data-i18n="hideWedges">Скрыть ячейки круга</span></label>
         <label id="level3PianoUnderRow"><input type="checkbox" id="level3PianoUnderCheckbox"><span data-i18n="pianoUnderNote">Клавиатура под нотой</span></label>
@@ -3623,6 +3821,19 @@
              Порядок — по формуле "нот слева-справа от тоники по кругу
              квинт" (0-6 .. 6-0), подсказка (i) показывает эту формулу. ===== -->
         <div id="trainModeGroups" class="chordGridCard cols3 cofBox">
+          <!-- "Выберите лад" + 2 кнопки порядка ладов (как строка
+               "Выбор группы аккордов" выше): "Классический" и
+               "От светлого к тёмному" — см. MODE_ORDERS в <script>. -->
+          <div class="variantGroupLabel variantPickRow" id="trainModeHeaderRow"><span data-i18n="trainModeHeader">Выберите лад</span>
+            <!-- (?) — кнопка: по клику открывает окно со схемой родства ладов
+                 (кружки + линии, строится в JS: buildModesSchemeSvg); при наведении
+                 ничего не показывает; на телефоне не нажимается -->
+            <span class="infoIcon" id="trainModeSchemeIcon" data-tip-scheme="modes">?</span>
+            <div class="variantGroupRow variantPickBtns" id="trainModeOrderBtns">
+              <button class="ringBtn" type="button" data-order="classic" data-i18n="modeOrderClassic">Классический</button>
+              <button class="ringBtn" type="button" data-order="light" data-i18n="modeOrderLight">От светлого к тёмному</button>
+            </div>
+          </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeLydianBtn" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
             <span class="infoIcon" data-i18n-tip="tipMode0_6" data-tip="@@0-6@@. 0 нот слева от выбранной ноты, 6 справа&#10;&#10;@@Тон тон тон полутон тон тон полутон@@&#10;&#10;В полутонах : @@222 122 1@@">i</span>
@@ -3661,6 +3872,7 @@
           </div>
           <label id="trainKeySigArcRow"><input type="checkbox" id="trainKeySigArcCheckbox"><span data-i18n="showKeySigArc">Показать стрелкой диезы\бемоли</span></label>
           <label id="trainRealModeNotesRow"><input type="checkbox" id="trainRealModeNotesCheckbox"><span data-i18n="realModeNotes">Реальные ноты лада</span></label>
+          <label id="trainMusicRulesRow"><input type="checkbox" id="trainMusicRulesCheckbox"><span data-i18n="musicRules">По музыкальным правилам</span></label>
         </div>
       </div>
 
@@ -3824,6 +4036,7 @@ Shift + A–G — диез
 Повторное нажатие той же ноты (клавиатура ПК или MIDI) — минорное кольцо
 1–9, 0 — Мажор, Минор, Sus2, Sus4, 7, maj7, m7, m(Maj7), add9, m(add9)
 Пробел, затем 1–9, 0 — 9, maj9, m9, m(Maj9), add11, m(add11), 11, maj11, m11, m(Maj11)
+Если выбран лад: 1–9 — лады (порядок как у кнопок ладов)
 M / Ь — основной вид, , / Б — 1-е обращение, . / Ю — 2-е, / (на русской раскладке .) — 3-е
 ← / → — повернуть круг
 Q / Й — «Стрелками», W / Ц — «Цветом»
@@ -3832,6 +4045,7 @@ Q / Й — «Стрелками», W / Ц — «Цветом»
 Аккорды/Лады
 Z / Я — подсказка на круге
 1–9, 0 и Пробел + цифра — добавить/убрать тип аккорда (порядок как в «Обучении»)
+Если выбраны лады: 1–9 — добавить/убрать лад (порядок как у кнопок ладов)
 «Назови аккорд/лад»: 1–9, 0 — ответы 1–10, Пробел + цифра — ответы 11–20
 
 MIDI
@@ -3852,6 +4066,7 @@ Training
 Pressing the same note again (computer keyboard or MIDI) — minor ring
 1–9, 0 — Major, Minor, Sus2, Sus4, 7, maj7, m7, m(Maj7), add9, m(add9)
 Space, then 1–9, 0 — 9, maj9, m9, m(Maj9), add11, m(add11), 11, maj11, m11, m(Maj11)
+If a mode is selected: 1–9 — modes (same order as the mode buttons)
 M — root position, , — 1st inversion, . — 2nd, / — 3rd
 ← / → — rotate the circle
 Q — "Arrows", W — "Color"
@@ -3860,6 +4075,7 @@ Mouse wheel — move the selected note around the circle (down — clockwise, up
 Chords/Modes
 Z — hint on the circle
 1–9, 0 and Space + digit — add/remove a chord type (same order as in "Training")
+If modes are selected: 1–9 — add/remove a mode (same order as the mode buttons)
 "Name the chord/mode": 1–9, 0 — answers 1–10, Space + digit — answers 11–20
 
 MIDI
@@ -3880,6 +4096,7 @@ Shift + A–G — 升号
 再次按下同一个音（电脑键盘或 MIDI）— 小调环
 1–9、0 — 大调、小调、Sus2、Sus4、7、maj7、m7、m(Maj7)、add9、m(add9)
 空格，然后 1–9、0 — 9、maj9、m9、m(Maj9)、add11、m(add11)、11、maj11、m11、m(Maj11)
+选择调式时：1–9 — 调式（顺序与调式按钮相同）
 M — 原位，, — 第一转位，. — 第二转位，/ — 第三转位
 ← / → — 旋转五度圈
 Q — “箭头”，W — “颜色”
@@ -3888,6 +4105,7 @@ Q — “箭头”，W — “颜色”
 和弦/调式
 Z — 圈上的提示
 1–9、0 及空格 + 数字 — 添加/移除和弦类型（顺序与“训练”中相同）
+选择调式时：1–9 — 添加/移除调式（顺序与调式按钮相同）
 “说出和弦/调式”：1–9、0 — 答案 1–10，空格 + 数字 — 答案 11–20
 
 MIDI
@@ -3911,19 +4129,29 @@ MIDI
    кидает ReferenceError даже через typeof — поэтому объявления
    должны идти раньше любого исполняемого кода, который их читает.
    ========================================================= */
-const ZOOM_MIN = 100;
+const ZOOM_MIN = 100;            // самый маленький круг на компьютере (прежние 100%)
+// Обычный размер круга на компьютере ("100%" для пользователя) — это
+// прежние 130% (3 нажатия "+"). Отсюда и растёт/уменьшается шагом
+// ZOOM_STEP, как раньше; меньше ZOOM_MIN уменьшить нельзя.
+// Чтобы поменять обычный размер — поменяйте число ниже.
+const ZOOM_DEFAULT = 130;
+// на телефоне обычный размер прежний — круг ровно по ширине экрана
+const ZOOM_DEFAULT_MOBILE = 100;
+function zoomDefault(){
+  return isMobileLayout() ? ZOOM_DEFAULT_MOBILE : ZOOM_DEFAULT;
+}
 // На телефоне круг можно уменьшать меньше 100% (касание 4 пальцами),
 // напр. чтобы освободить место кнопкам ответов "Назови аккорд/лад".
 const ZOOM_MIN_MOBILE = 30;
 const ZOOM_MAX = 1000;
 const ZOOM_STEP = 10;
-const ZOOM_PRACTICE_STORAGE_KEY = 'circleOfFifthsZoomPractice';
-const ZOOM_TRAINING_STORAGE_KEY = 'circleOfFifthsZoomTraining';
+const ZOOM_PRACTICE_STORAGE_KEY = 'circleOfFifthsZoomPractice2';
+const ZOOM_TRAINING_STORAGE_KEY = 'circleOfFifthsZoomTraining2';
 
 let zoomPractice = parseInt(localStorage.getItem(ZOOM_PRACTICE_STORAGE_KEY), 10);
-if(isNaN(zoomPractice)) zoomPractice = 100;
+if(isNaN(zoomPractice)) zoomPractice = zoomDefault();
 let zoomTraining = parseInt(localStorage.getItem(ZOOM_TRAINING_STORAGE_KEY), 10);
-if(isNaN(zoomTraining)) zoomTraining = 100;
+if(isNaN(zoomTraining)) zoomTraining = zoomDefault();
 
 /* =========================================================
    НАСТРОЙКИ ноты в центре круга (размер / цвет / шрифт)
@@ -4237,6 +4465,9 @@ const I18N = {
     zh:'最好在外圈（大调）作答 - 这比在内圈（小调）更简单。\n\n用电脑键盘\\MIDI作答时，和弦按“选择音符”中题目音符所在圈（大调或小调）的图式显示。调式：如果只选择了小调圈上的音符，按下的音符显示在小调圈上；如果至少选择了一个大调圈上的音符，则显示在大调圈上。用鼠标作答时，在点击的位置进行检查。'
   },
   modeTypeHeader:      { ru:'Выберите лады', en:'Choose modes', zh:'选择调式' },
+  trainModeHeader:     { ru:'Выберите лад', en:'Choose a mode', zh:'选择调式' },
+  modeOrderClassic:    { ru:'Классический', en:'Classic', zh:'经典' },
+  modeOrderLight:      { ru:'От светлого к тёмному', en:'Bright to dark', zh:'由明到暗' },
   majMinChord:         { ru:'Мажор/Минор', en:'Major/Minor', zh:'大调/小调' },
   showKeyboard:        { ru:'Показывать клавиатуру', en:'Show keyboard', zh:'显示键盘' },
   keyboardBelow:       { ru:'Клавиатура снизу', en:'Keyboard below', zh:'键盘在下方' },
@@ -4331,6 +4562,7 @@ const I18N = {
   },
   showKeySigArc:       { ru:'Показать стрелкой диезы\\бемоли', en:'Show sharps\\flats with a line', zh:'用线显示升号\\降号' },
   realModeNotes:       { ru:'Реальные ноты лада', en:'Real notes of the mode', zh:'调式实际音名' },
+  musicRules:          { ru:'По музыкальным правилам', en:'By music theory rules', zh:'按乐理规则' },
   modeMajor:           { ru:'Мажор', en:'Major', zh:'大调' },
   modeMixolydian:      { ru:'Миксолидийский', en:'Mixolydian', zh:'混合利底亚调式' },
   modeDorian:          { ru:'Дорийский', en:'Dorian', zh:'多利亚调式' },
@@ -6283,7 +6515,82 @@ function trainModeCfg(modeId){
 // то же самое, что trainChordLettersFor, но для лада — переиспользует
 // spellTrainInterval, поэтому буквы всегда в ASCII-виде ('#'/'b'),
 // совместимом с parseSpelledLetter() в computeTrainPianoNotes ниже.
-function trainModeLettersFor(noteRaw, modeId){
+/* Написание лада от нажатой ячейки ("Обучение"): тоника — ровно та нота,
+   что подписана на ячейке (A♭ — A♭ лад, G♯m — G♯ лад), каждая следующая
+   ступень — следующая буква. musicRules = false (по умолчанию) — максимум
+   1 знак: нота, которой нужен дубль-знак, пишется своим энгармоническим
+   двойником (G♯ гарм. минор: F♯♯ -> G). musicRules = true (галка "По
+   музыкальным правилам") — всё строго по правилам, с дубль-знаками.
+   Старое правило "меньше знаков" (trainModeLettersMinSigns ниже) по-прежнему
+   используется в "Аккорды/Лады" (клавиатура ладов и "Выбрать тональность"). */
+var TRAIN_MUSIC_RULES_KEY = 'circleTrainMusicRules';
+var trainMusicRulesOn = localStorage.getItem(TRAIN_MUSIC_RULES_KEY) === '1';
+function trainSingleAccidentalName(s){
+  const pc = parseSpelledLetter(s.text).pc;
+  const nat = LETTERS7.find(L => NATURAL_PC[L] === pc);
+  if(nat) return nat;
+  if(s.alter > 0) return LETTERS7.find(L => (NATURAL_PC[L] + 1) % 12 === pc) + '#';
+  return LETTERS7.find(L => (NATURAL_PC[L] + 11) % 12 === pc) + 'b';
+}
+// сумма ключевых знаков тональности лада от тоники root (+ диезы, - бемоли);
+// у гарм./мелод. минора — как у натурального минора
+function trainModeKeySigSum(root, cfg){
+  const natCfg = trainModeCfg((cfg.id === 'harmMinor' || cfg.id === 'melMinor') ? 'minor' : cfg.id) || cfg;
+  return natCfg.formula.reduce((acc, iv, i) => acc + spellTrainIntervalStrict(root, iv, i).alter, 0);
+}
+/* Ноты лада и число ключевых знаков для нажатой ячейки — { letters, sig }.
+   По умолчанию (максимум 1 знак):
+   - тональность от нажатой ноты существует (до 7 знаков) — лад пишется от
+     неё; если повышенной ступени гарм./мелод. минора нужен дубль-знак, она
+     пишется энгармонически (G♯ гарм. минор: F♯♯ -> G);
+   - больше 7 знаков (D♭ фригийский — 9♭) — тоника остаётся как нажата,
+     остальные ноты берутся из энгармонической тональности (C♯ фригийский):
+     D♭ D E F♯ G♯ A B, знаков — как у неё (3♯).
+   musicRules (галка "По музыкальным правилам") — строго по правилам, с
+   дубль-знаками и настоящим числом знаков. */
+// без галки "По музыкальным правилам" на клавиатуре — обычные названия
+// белых клавиш: F♭ -> E, C♭ -> B, E♯ -> F, B♯ -> C (E♭ фригийский:
+// E♭ E G♭ A♭ B♭ B D♭; число знаков остаётся по правилам)
+var TRAIN_PLAIN_WHITE_NAMES = { 'Fb':'E', 'Cb':'B', 'E#':'F', 'B#':'C' };
+function trainModeSpelling(noteRaw, modeId, musicRules){
+  const sp = trainModeSpellingRaw(noteRaw, modeId, musicRules);
+  if(sp && !musicRules) sp.letters = sp.letters.map(t => TRAIN_PLAIN_WHITE_NAMES[t] || t);
+  return sp;
+}
+function trainModeSpellingRaw(noteRaw, modeId, musicRules){
+  const cfg = trainModeCfg(modeId);
+  if(!cfg) return null;
+  const root = String(noteRaw).replace(/m$/, '');
+  const strict = cfg.formula.map((iv, i) => spellTrainIntervalStrict(root, iv, i));
+  const sig = trainModeKeySigSum(root, cfg);
+  if(musicRules){
+    // тональность с дубль-знаками (больше 7 знаков в ключе): считаются ноты
+    // лада со знаком, дубль-знак — за 1 (D♭ гарм. минор — 6♭) — больше 7
+    // не бывает
+    let sigR = sig;
+    if(Math.abs(sig) > 7) sigR = strict.reduce((acc, x) => acc + Math.sign(x.alter), 0);
+    return { letters: strict.map(x => x.text), sig: sigR };
+  }
+  if(Math.abs(sig) <= 7){
+    return { letters: strict.map(x => Math.abs(x.alter) <= 1 ? x.text : trainSingleAccidentalName(x)), sig };
+  }
+  // энгармоническая тоника (D♭ -> C♯), от которой тональность не больше 7 знаков
+  for(const altRoot of enharmonicTonicSpellings(root)){
+    if(altRoot[0] === root[0]) continue;
+    const altSig = trainModeKeySigSum(altRoot, cfg);
+    if(Math.abs(altSig) > 7) continue;
+    const altSp = cfg.formula.map((iv, i) => spellTrainIntervalStrict(altRoot, iv, i));
+    if(!altSp.every(x => Math.abs(x.alter) <= 1)) continue;
+    return { letters: [strict[0].text].concat(altSp.slice(1).map(x => x.text)), sig: altSig };
+  }
+  const alt = trainModeLettersMinSigns(noteRaw, modeId);
+  return { letters: [strict[0].text].concat(alt.slice(1)), sig: trainModeKeySigSum(alt[0], cfg) };
+}
+function trainModeLettersFor(noteRaw, modeId, musicRules){
+  const sp = trainModeSpelling(noteRaw, modeId, musicRules);
+  return sp ? sp.letters : null;
+}
+function trainModeLettersMinSigns(noteRaw, modeId){
   const cfg = trainModeCfg(modeId);
   if(!cfg) return null;
   /* В гамме каждая следующая ступень — обязательно следующая буква
@@ -6449,7 +6756,7 @@ function computeTrainPianoNotes(){
   // клавиатура-подсказка работают для лада точно так же, как для
   // аккорда, без отдельного кода.
   if(trainModeType){
-    const spelledMode = trainModeLettersFor(pressedTrainTonicName, trainModeType);
+    const spelledMode = trainModeLettersFor(pressedTrainTonicName, trainModeType, trainMusicRulesOn);
     if(!spelledMode) return null;
     // Гармонический/мелодический минор: повышенные ступени (см. raise в
     // TRAIN_MODES) красятся так же, как на самом круге (var(--red-flash)) —
@@ -7345,7 +7652,7 @@ function computeL3PianoNotes(){
   // тот же принцип, что и в computeTrainPianoNotes() выше: тоника —
   // зелёная, остальные ноты лада — цветом терции (жёлтый).
   if(currentL3.modeType){
-    const spelledMode = trainModeLettersFor(currentL3.tonicNoteRaw, currentL3.modeType);
+    const spelledMode = trainModeLettersMinSigns(currentL3.tonicNoteRaw, currentL3.modeType);
     if(!spelledMode) return null;
     // Гармонический/мелодический минор: повышенные ступени (см. raise в
     // TRAIN_MODES) красятся так же, как на самом круге (var(--red-flash)) —
@@ -11261,7 +11568,7 @@ function l3KeySpelling(){
   if(l3KeySpellCache && l3KeySpellCache.sig === sig) return l3KeySpellCache;
   const circleName = (l3KeyDegreeCells()[0].ring === 'minor' ? minors : majors)
     .find(n => l3NamePc(n) === l3KeyTonicPc);
-  const letters = trainModeLettersFor(circleName, l3KeyType) || [];
+  const letters = trainModeLettersMinSigns(circleName, l3KeyType) || [];
   const pcToName = {}, pcToLetter = {};
   letters.forEach(s=>{
     const pc = parseTrainNoteName(s).pc;
@@ -11829,7 +12136,7 @@ function fillL3KeyTonicOptions(){
     const pc = l3NamePc(n);
     let text = n.replace(/m$/, '');
     try{
-      const sp = trainModeLettersFor(n, l3KeyType);
+      const sp = trainModeLettersMinSigns(n, l3KeyType);
       if(sp && sp[0]) text = sp[0][0] + sp[0].slice(1).replace(/#/g, '♯').replace(/b/g, '♭');
     }catch(e){}
     const opt = document.createElement('option');
@@ -12223,10 +12530,12 @@ var l3NameAccLayer = null;
 function l3NameAnswerList(){
   const list = [];
   if(level3Family === 'modes'){
-    Object.entries(LEVEL3_MODE_BTN_IDS).forEach(([id, btnId])=>{
+    // порядок — как у кнопок ладов на экране ("Классический" /
+    // "От светлого к тёмному", см. MODE_ORDERS)
+    document.querySelectorAll('#level3ModeButtons .ringBtn[data-mode]').forEach(btn=>{
+      const id = btn.getAttribute('data-mode');
       if(!level3ModeTypes.has(id)) return;
-      const btn = document.getElementById(btnId);
-      list.push({ id, label: btn ? btn.textContent.trim() : id });
+      list.push({ id, label: btn.textContent.trim() });
     });
     return list;
   }
@@ -12637,8 +12946,12 @@ function renderLevel3Hint(){
         try{
           const off = ((idx - currentL3.index) % 12 + 12) % 12;
           const rr = cfg && cfg.raise ? cfg.raise.find(x => ((x.cellOffset % 12) + 12) % 12 === off) : null;
-          const tonicRaw = currentL3.ring === 'minor' ? rootOf(currentL3.tonicNoteRaw) : currentL3.tonicNoteRaw;
-          if(rr) text = spellTrainIntervalStrict(tonicRaw, rr.semitone).text || letter;
+          // та же нота, что на клавиатуре-подсказке (максимум 1 знак)
+          if(rr){
+            const lt = trainModeLettersMinSigns(currentL3.tonicNoteRaw, currentL3.modeType);
+            const dg = cfg.formula.indexOf(rr.semitone);
+            text = (lt && lt[dg]) || letter;
+          }
         }catch(e){ text = letter; }
         const r = ring === 'major' ? LEVEL3_HINT_RADIUS_MAJOR : LEVEL3_HINT_RADIUS_MINOR;
         const p = polar(CX, CY, r, idx * 30);
@@ -13306,7 +13619,7 @@ function applyTrainRealModeNotes(ring, tonicIndex, cfg){
   if(!trainRealModeNotesOn || !cfg) return;
   const tonicItem = trainWedgeMap[ring + '-' + tonicIndex];
   if(!tonicItem) return;
-  const letters = trainModeLettersFor(tonicItem.name, cfg.id);
+  const letters = trainModeLettersFor(tonicItem.name, cfg.id, trainMusicRulesOn);
   if(!letters) return;
   const semis = ring === 'minor' ? minorsSemitone : majorsSemitone;
   const raiseList = cfg.raise || [];
@@ -13339,7 +13652,11 @@ function raiseModeWedge(item, ring, tonicIndex, semitoneInterval){
   setWedgeInstant(item, 'var(--red-flash)', null);
   const tonicName = trainWedgeMap[ring + '-' + tonicIndex].name;
   const tonicRaw = ring === 'minor' ? rootOf(tonicName) : tonicName;
-  const spelled = spellTrainIntervalStrict(tonicRaw, semitoneInterval);
+  // подпись — та же нота, что на клавиатуре-подсказке (trainModeLettersFor)
+  const cfgR = trainModeCfg(trainModeType);
+  const degR = cfgR ? cfgR.formula.indexOf(semitoneInterval) : -1;
+  const lettersR = degR >= 0 ? trainModeLettersFor(tonicName, trainModeType, trainMusicRulesOn) : null;
+  const spelled = { text: (lettersR && lettersR[degR]) || spellTrainIntervalStrict(tonicRaw, semitoneInterval).text };
   // Запоминаем «сырую» подмену на самом item — так refreshAllNoteNameDisplays()
   // (переключатель ABC/до-ре-ми) знает, что у этой ячейки сейчас не родное
   // название, а замена, и пересобирает именно её текст, а не t.name (иначе
@@ -14133,6 +14450,47 @@ Object.keys(TRAIN_MODE_BTN_IDS).forEach(modeId=>{
   trainModeBtnEls[modeId] = document.getElementById(TRAIN_MODE_BTN_IDS[modeId]);
 });
 
+/* ===== Порядок кнопок ладов: "Классический" / "От светлого к тёмному".
+   Кнопки справа от заголовка "Выберите лад" (Обучение) и "Выберите
+   лады" (Аккорды/Лады). Меняется ТОЛЬКО расположение кнопок ладов —
+   сами лады, подсказки и логика не трогаются. Гармонический и
+   мелодический минор всегда сразу после Минора. У каждой вкладки свой выбор,
+   запоминается в localStorage. По умолчанию — "От светлого к тёмному"
+   (прежний порядок). ===== */
+const MODE_ORDERS = {
+  classic:['major','dorian','phrygian','lydian','mixolydian','minor','harmMinor','melMinor','locrian'],
+  light:  ['lydian','major','mixolydian','dorian','minor','harmMinor','melMinor','phrygian','locrian']
+};
+const MODE_ORDER_SETUPS = [
+  { key:'circleTrainModeOrder', boxId:'trainModeGroups',   btnsId:'trainModeOrderBtns',  ids:TRAIN_MODE_BTN_IDS,  beforeId:'trainKeySigArcRow' },
+  { key:'circleL3ModeOrder',    boxId:'level3ModeButtons', btnsId:'level3ModeOrderBtns', ids:LEVEL3_MODE_BTN_IDS, beforeId:null }
+];
+function applyModeOrder(setup, order, byClick){
+  if(!MODE_ORDERS[order]) order = 'light';
+  const box = document.getElementById(setup.boxId);
+  if(!box) return;
+  const before = setup.beforeId ? document.getElementById(setup.beforeId) : null;
+  MODE_ORDERS[order].forEach(modeId=>{
+    const btn = document.getElementById(setup.ids[modeId]);
+    const row = btn ? btn.closest('.ringBtnRow') : null;
+    if(row) box.insertBefore(row, before);
+  });
+  document.querySelectorAll('#' + setup.btnsId + ' .ringBtn').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('data-order') === order);
+  });
+  try{ localStorage.setItem(setup.key, order); }catch(e){}
+  // кнопки ответов "Назови аккорд/лад" идут в том же порядке — обновляем
+  if(byClick && setup.boxId === 'level3ModeButtons' && typeof updateL3Piano === 'function') updateL3Piano();
+}
+MODE_ORDER_SETUPS.forEach(setup=>{
+  let saved = 'light';
+  try{ saved = localStorage.getItem(setup.key) || 'light'; }catch(e){}
+  applyModeOrder(setup, saved);
+  document.querySelectorAll('#' + setup.btnsId + ' .ringBtn').forEach(b=>{
+    b.addEventListener('click', ()=> applyModeOrder(setup, b.getAttribute('data-order'), true));
+  });
+});
+
 function applyTrainModeButtonsUI(){
   Object.keys(trainModeBtnEls).forEach(modeId=>{
     const btn = trainModeBtnEls[modeId];
@@ -14265,6 +14623,19 @@ function trainKeySigParentIndex(ring, tonicIndex, cfg){
 
 // { sharps, flats } для родительского мажора: правая половина — диезы,
 // левая — бемоли, F♯/G♭ (6) — оба.
+/* Число знаков у нажатой тоники — по записи лада от самой ячейки
+   (A♭ гарм. минор — 7♭, G♯ гарм. минор — 5♯; у гарм./мелод. минора — как
+   у натурального минора; см. trainModeSpelling). Больше 7 не бывает: с
+   галкой "По музыкальным правилам" у тональностей с дубль-знаками
+   считаются ноты лада со знаком, дубль-знак — за 1. F♯/G♭ (6 знаков в середине круга) — по-прежнему оба. */
+function trainKeySigCountsFor(ring, idx, cfg){
+  const pos = trainKeySigCounts(trainKeySigParentIndex(ring, idx, cfg));
+  const item = trainWedgeMap[ring + '-' + idx];
+  const sp = trainModeSpelling(item ? item.name : (ring === 'minor' ? minors : majors)[idx], cfg.id, trainMusicRulesOn);
+  const sum = sp ? sp.sig : 0;
+  if(pos.sharps === 6 && pos.flats === 6 && Math.abs(sum) === 6) return pos;
+  return sum > 0 ? { sharps:sum, flats:0 } : { sharps:0, flats:-sum };
+}
 function trainKeySigCounts(parentIdx){
   if(parentIdx === 0) return { sharps:0, flats:0 };
   if(parentIdx === 6) return { sharps:6, flats:6 };
@@ -14303,6 +14674,7 @@ function keySigPlaceIn(textEl, r, angle){
 }
 
 function drawTrainKeySigLine(type, n, r){
+  n = Math.min(n, 7);   // больше 7 мест для знаков на круге нет
   const pos = type === 'sharp' ? KEYSIG_SHARP_POS : KEYSIG_FLAT_POS;
   const names = type === 'sharp' ? KEYSIG_SHARP_NAMES : KEYSIG_FLAT_NAMES;
   const color = 'var(--keysig-line)';
@@ -14354,7 +14726,7 @@ function updateTrainKeySig(){
   const cfg = modeType ? trainModeCfg(modeType) : null;
   if(!cfg || ring === null || idx === null) return;
 
-  const counts = trainKeySigCounts(trainKeySigParentIndex(ring, idx, cfg));
+  const counts = trainKeySigCountsFor(ring, idx, cfg);
 
   // цифра количества знаков у тоники — всегда на своём месте
   const label = keySigEl('text', {
@@ -14427,6 +14799,25 @@ if(typeof updateTrainPianoOffset === 'function') updateTrainPianoOffset();
       clearTriadHighlights();
       highlightModeForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
     }
+  });
+})();
+
+// Галка "По музыкальным правилам" — ноты лада с дубль-знаками, если нужны
+// (см. trainModeLettersFor)
+(function(){
+  const cb = document.getElementById('trainMusicRulesCheckbox');
+  if(!cb) return;
+  cb.checked = trainMusicRulesOn;
+  cb.addEventListener('change', ()=>{
+    trainMusicRulesOn = cb.checked;
+    try{ localStorage.setItem(TRAIN_MUSIC_RULES_KEY, trainMusicRulesOn ? '1' : '0'); }catch(e){}
+    if(trainModeType && pressedTrainTonicRing !== null){
+      clearTriadHighlights();
+      highlightModeForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    }
+    updateTrainPiano();
+    updateTrainKeySig();   // число знаков и линия "стрелкой"
+    if(typeof updateTrainPianoOffset === 'function') updateTrainPianoOffset();
   });
 })();
 
@@ -15574,7 +15965,7 @@ function zoomOut(){
   applyZoom();
 }
 function zoomReset(){
-  if(appMode === 'training'){ zoomTraining = 100; } else { zoomPractice = 100; }
+  if(appMode === 'training'){ zoomTraining = zoomDefault(); } else { zoomPractice = zoomDefault(); }
   applyZoom();
 }
 
@@ -17569,7 +17960,32 @@ function showTrainHotkeyChordLabel(text){
   }, 1000);
 }
 
+/* Если выбран лад (а не аккорд), цифры 1..9 переключают лады — в том
+   порядке, в котором кнопки ладов стоят сейчас на экране (зависит от
+   "Классический" / "От светлого к тёмному"). Вернуться к аккордам —
+   кликом по кнопке аккорда. */
+function pressModeHotkeyByOrderIndex(boxId, orderIdx){
+  const btns = document.querySelectorAll('#' + boxId + ' .ringBtn[data-mode]');
+  const btn = btns[orderIdx];
+  if(!btn || btn.disabled) return null;
+  btn.click();
+  return btn;
+}
+
 function pressChordHotkeyByOrderIndex(orderIdx){
+  if(appMode === 'training' && trainModeType){
+    const btn = pressModeHotkeyByOrderIndex('trainModeGroups', orderIdx);
+    if(btn){
+      // сокращённое название — из CENTER_MODE_LABEL_SHORT (то же, что в
+      // центре круга во вкладке "Аккорды/Лады"); нет сокращения — полное
+      const shortEntry = CENTER_MODE_LABEL_SHORT[btn.getAttribute('data-mode')];
+      showTrainHotkeyChordLabel(shortEntry ? (shortEntry[appLang] || shortEntry.ru) : btn.textContent);
+    }
+    return !!btn;
+  }
+  if(appMode === 'practice' && practiceLevel === 3 && level3Family === 'modes' && !l3KeyMode){
+    return !!pressModeHotkeyByOrderIndex('level3ModeButtons', orderIdx);
+  }
   const type = CHORD_HOTKEY_ORDER[orderIdx];
   if(!type) return false;
   if(appMode === 'training'){
@@ -17661,7 +18077,381 @@ if(circleIsFirstLaunch){
   var tip = document.getElementById('globalInfoTooltip');
   if(!tip) return;
 
+  /* ===== Схема родства ладов (подсказка у "Выберите лад") =====
+     Кружок = лад, линия = лады отличаются одной ступенью.
+     Координаты кружков — x/y (в единицах viewBox 1600x870),
+     r — радиус, lines — строки названия по языкам,
+     deg — номер ступени мажора, alt — отличающиеся ступени
+     (от Мажора — правая половина, от Минора — левая). */
+  var MODES_SCHEME_NODES = {
+    locrian: {x:275, y:265, r:72, deg:'VII', alt:'♭2 ♭5',
+      lines:{ru:['Локрийский'], en:['Locrian'], zh:['洛克利亚调式']}},
+    phrygian: {x:450, y:265, r:72, deg:'III', alt:'♭2',
+      lines:{ru:['Фригийский'], en:['Phrygian'], zh:['弗里几亚调式']}},
+    phrygDom: {x:625, y:265, r:72, deg:'', alt:'♭2 ♯3',
+      lines:{ru:['Фригийский','доминант'], en:['Phrygian','dominant'], zh:['弗里几亚','属调式']}},
+    dorian: {x:275, y:605, r:72, deg:'II', alt:'♯6',
+      lines:{ru:['Дорийский'], en:['Dorian'], zh:['多利亚调式']}},
+    minor: {x:800, y:435, r:72, deg:'VI', alt:'',
+      lines:{ru:['Минор'], en:['Minor'], zh:['小调']}},
+    harmMinor: {x:800, y:605, r:72, deg:'', alt:'♯7',
+      lines:{ru:['Гармони-','ческий минор'], en:['Harmonic','minor'], zh:['和声小调']}},
+    melMinor: {x:975, y:775, r:72, deg:'', alt:'♯6 ♯7',
+      lines:{ru:['Мелодический','минор'], en:['Melodic','minor'], zh:['旋律小调']}},
+    tonic: {x:975, y:435, r:72, deg:'', alt:'', big:true,
+      lines:{ru:['C'], en:['C'], zh:['C']}},
+    major: {x:1150, y:435, r:72, deg:'I', alt:'',
+      lines:{ru:['Мажор'], en:['Major'], zh:['大调']}},
+    mixolydian: {x:975, y:265, r:72, deg:'V', alt:'♭7',
+      lines:{ru:['Миксо-','лидийский'], en:['Mixo-','lydian'], zh:['混合利底亚','调式']}},
+    lydian: {x:1325, y:435, r:72, deg:'IV', alt:'♯4',
+      lines:{ru:['Лидийский'], en:['Lydian'], zh:['利底亚调式']}},
+    acoustic: {x:1150, y:265, r:72, deg:'', alt:'♯4 ♭7',
+      lines:{ru:['Акустический'], en:['Acoustic'], zh:['原声音阶']}},
+    mixoFlat6: {x:800, y:265, r:72, deg:'', alt:'♭6 ♭7',
+      lines:{ru:['Миксо-','лидийский ♭6'], en:['Mixolydian','♭6'], zh:['混合利底亚','♭6']}},
+    locrianNat2: {x:450, y:435, r:72, deg:'', alt:'♭5',
+      lines:{ru:['Локрийский ♮2'], en:['Locrian ♮2'], zh:['洛克利亚 ♮2']}},
+    dorianFlat2: {x:275, y:435, r:72, deg:'', alt:'♭2 ♯6',
+      lines:{ru:['Дорийский ♭2'], en:['Dorian ♭2'], zh:['多利亚 ♭2']}},
+    lydianAug: {x:1500, y:435, r:72, deg:'', alt:'♯4 ♯5',
+      lines:{ru:['Лидийский','увеличенный'], en:['Lydian','augmented'], zh:['增利底亚']}},
+    altered: {x:100, y:265, r:72, deg:'', alt:'♭2 ♭4 ♭5',
+      lines:{ru:['Альтериро-','ванный'], en:['Altered'], zh:['变化音阶']}},
+    harmMajor: {x:975, y:605, r:72, deg:'', alt:'♭6',
+      lines:{ru:['Гармони-','ческий мажор'], en:['Harmonic','major'], zh:['和声大调']}},
+    ionianSharp5: {x:1325, y:265, r:72, deg:'', alt:'♯5',
+      lines:{ru:['Ионийский ♯5'], en:['Ionian ♯5'], zh:['伊奥尼亚 ♯5']}},
+    lydianSharp2: {x:1325, y:605, r:72, deg:'', alt:'♯2 ♯4',
+      lines:{ru:['Лидийский ♯2'], en:['Lydian ♯2'], zh:['利底亚 ♯2']}},
+    mixoFlat2: {x:800, y:95, r:72, deg:'', alt:'♭2 ♭7',
+      lines:{ru:['Миксо-','лидийский ♭2'], en:['Mixolydian','♭2'], zh:['混合利底亚','♭2']}},
+    dorianSharp4: {x:275, y:775, r:72, deg:'', alt:'♯4 ♯6',
+      lines:{ru:['Дорийский ♯4'], en:['Dorian ♯4'], zh:['多利亚 ♯4']}},
+    dorianFlat5: {x:100, y:605, r:72, deg:'', alt:'♭5 ♯6',
+      lines:{ru:['Дорийский ♭5'], en:['Dorian ♭5'], zh:['多利亚 ♭5']}},
+    locrianNat6: {x:275, y:95, r:72, deg:'', alt:'♭2 ♭5 ♯6',
+      lines:{ru:['Локрийский ♮6'], en:['Locrian ♮6'], zh:['洛克利亚 ♮6']}},
+    phrygianFlat4: {x:450, y:95, r:72, deg:'', alt:'♭2 ♭4',
+      lines:{ru:['Фригийский ♭4'], en:['Phrygian ♭4'], zh:['弗里几亚 ♭4']}},
+    lydianFlat3: {x:1150, y:605, r:72, deg:'', alt:'♯4 ♯6 ♯7',
+      lines:{ru:['Лидийский ♭3'], en:['Lydian ♭3'], zh:['利底亚 ♭3']}},
+    hungarianMinor: {x:625, y:775, r:72, deg:'', alt:'♯4 ♯7',
+      lines:{ru:['Венгерский','минор'], en:['Hungarian','minor'], zh:['匈牙利小调']}},
+    neapMinor: {x:625, y:605, r:72, deg:'', alt:'♭2 ♯7',
+      lines:{ru:['Неаполитан-','ский минор'], en:['Neapolitan','minor'], zh:['那不勒斯','小调']}},
+    neapMajor: {x:800, y:775, r:72, deg:'', alt:'♭2 ♯6 ♯7',
+      lines:{ru:['Неаполитан-','ский мажор'], en:['Neapolitan','major'], zh:['那不勒斯','大调']}},
+    doubleHarm: {x:625, y:95, r:72, deg:'', alt:'♭2 ♭6',
+      lines:{ru:['Двойной','гармони-','ческий мажор'], en:['Double','harmonic','major'], zh:['双和声','大调']}}
+  };
+  /* Где используется лад — текст значка (i) в кружке.
+     У ладов без сведений значка нет.
+     Значок стоит внутри кружка, внизу. Над схемой — пометка
+     MODES_SCHEME_INFO_NOTE, что сведения взяты из интернета. */
+  var MODES_SCHEME_INFO = {
+    major: {ru:'Ирландская музыка: больше 60% мелодий — самый частый лад. Типичные тональности: G, D, A мажор.',
+            en:'Irish traditional music: over 60% of tunes — the most common mode. Typical keys: G, D, A major.',
+            zh:'爱尔兰传统音乐：超过60%的曲子，最常见的调式。常见调：G、D、A大调。'},
+    minor: {ru:'Ирландская музыка: самый редкий из четырёх основных ладов (A, B, E минор).',
+            en:'Irish traditional music: the rarest of the four main modes (A, B, E minor).',
+            zh:'爱尔兰传统音乐：四种主要调式中最少见的（A、B、E小调）。'},
+    dorian: {ru:'Ирландская и шотландская музыка: чуть больше 10% ирландских мелодий; большинство «минорных» ирландских мелодий — дорийские (чаще A и E дорийский).',
+             en:'Irish and Scottish music: just over 10% of Irish tunes; most "minor" Irish tunes are actually Dorian (mostly A and E Dorian).',
+             zh:'爱尔兰和苏格兰音乐：约10%以上的爱尔兰曲子；多数“小调”爱尔兰曲子其实是多利亚调式（常见A、E多利亚）。'},
+    mixolydian: {ru:'Ирландская музыка: около 15% мелодий (A и D миксолидийский). Шотландская хайлендская волынка (A миксолидийский). Фолк, джаз, фанк, блюз, рок.',
+                 en:'Irish music: about 15% of tunes (A and D Mixolydian). Scottish Highland bagpipe (A Mixolydian). Folk, jazz, funk, blues, rock.',
+                 zh:'爱尔兰音乐：约15%的曲子（A、D混合利底亚）。苏格兰高地风笛（A混合利底亚）。民谣、爵士、放克、布鲁斯、摇滚。'},
+    lydian: {ru:'Польское Подгалье (музыка горцев). Повышенная 4-я ступень — в мазурках Шопена. В кельтской музыке почти не встречается.',
+             en:'Polish Podhale (highlander music). The raised 4th appears in Chopin\'s mazurkas. Almost absent in Celtic music.',
+             zh:'波兰波德哈雷（高地音乐）。肖邦的玛祖卡中有升高的第四级。凯尔特音乐中几乎不用。'},
+    acoustic: {ru:'Тувинская музыка (горловое пение, варган). Барток (румынский фольклор), Стравинский, Шимановский. Северо-восток Бразилии (Нордесте). Джаз.',
+               en:'Tuvan music (throat singing, jaw harp). Bartók (Romanian folk music), Stravinsky, Szymanowski. Northeast Brazil (Nordeste). Jazz.',
+               zh:'图瓦音乐（呼麦、口簧琴）。巴托克（罗马尼亚民间音乐）、斯特拉文斯基、希曼诺夫斯基。巴西东北部。爵士。'},
+    phrygian: {ru:'Фламенко (солеа, булерия, танго). Хэви-метал.',
+               en:'Flamenco (soleá, bulerías, tangos). Heavy metal.',
+               zh:'弗拉门戈（索莱阿、布莱里亚、探戈）。重金属。'},
+    locrian: {ru:'Практически не используется: 5-я ступень понижена, лад неустойчивый.',
+              en:'Hardly used: the lowered 5th makes the mode unstable.',
+              zh:'几乎不用：第五级降低，调式不稳定。'},
+    phrygDom: {ru:'Фламенко, арабский макам Хиджаз, Индия, Балканы, Греция, метал. «Misirlou».',
+               en:'Flamenco, Arabic maqam Hijaz, India, Balkans, Greece, metal. "Misirlou".',
+               zh:'弗拉门戈、阿拉伯希贾兹木卡姆、印度、巴尔干、希腊、金属乐。《Misirlou》。'},
+    harmMinor: {ru:'Фламенко (вместе с мажором и фригийским ладом).',
+                en:'Flamenco (together with major and Phrygian).',
+                zh:'弗拉门戈（与大调和弗里几亚调式一起）。'},
+    melMinor: {ru:'Джаз (лады мелодического минора).', en:'Jazz (modes of melodic minor).', zh:'爵士（旋律小调的调式）。'},
+    mixoFlat6: {ru:'Джаз (лад мелодического минора).', en:'Jazz (a mode of melodic minor).', zh:'爵士（旋律小调的调式）。'},
+    locrianNat2: {ru:'Джаз (лад мелодического минора).', en:'Jazz (a mode of melodic minor).', zh:'爵士（旋律小调的调式）。'},
+    dorianFlat2: {ru:'Джаз (лад мелодического минора).', en:'Jazz (a mode of melodic minor).', zh:'爵士（旋律小调的调式）。'},
+    lydianAug: {ru:'Джаз (лад мелодического минора).', en:'Jazz (a mode of melodic minor).', zh:'爵士（旋律小调的调式）。'},
+    altered: {ru:'Джаз: на доминантсептаккордах с повышенными или пониженными квинтами и нонами.',
+              en:'Jazz: over dominant 7th chords with raised or lowered 5ths and 9ths.',
+              zh:'爵士：用于五音或九音升降的属七和弦。'},
+    dorianSharp4: {ru:'Греческая и румынская музыка.',
+                   en:'Greek and Romanian music.',
+                   zh:'希腊和罗马尼亚音乐。'},
+    hungarianMinor: {ru:'Индия (рага Симхендрамадхьямам), турецкий макам Невесер.',
+                     en:'India (raga Simhendramadhyamam), Turkish makam Neveser.',
+                     zh:'印度（Simhendramadhyamam拉格）、土耳其Neveser木卡姆。'},
+    doubleHarm: {ru:'Некоторые версии «Misirlou». Северная Индия: утренняя рага Бхайрав.',
+                 en:'Some versions of "Misirlou". North India: morning raga Bhairav.',
+                 zh:'《Misirlou》的某些版本。北印度：清晨拉格Bhairav。'},
+    harmMajor: {ru:'Римский-Корсаков считал его одним из четырёх основных звукорядов (с мажором, минором и гармоническим минором). Такэмицу. Карнатическая музыка Индии: рага Сарасанги.',
+                en:'Rimsky-Korsakov counted it among the four basic scales (with major, minor and harmonic minor). Takemitsu. Carnatic music of India: raga Sarasangi.',
+                zh:'里姆斯基-科萨科夫将其列为四种基本音阶之一（与大调、小调、和声小调并列）。武满彻。印度卡纳提克音乐：Sarasangi拉格。'},
+    mixoFlat2: {ru:'Индия: утренняя рага Ахир Бхайрав.', en:'India: morning raga Ahir Bhairav.', zh:'印度：清晨拉格Ahir Bhairav。'},
+    lydianSharp2: {ru:'Редко. Карнатическая музыка Индии: рага Косалам; Рави Шанкар.',
+                   en:'Rare. Carnatic music of India: raga Kosalam; Ravi Shankar.',
+                   zh:'少见。印度卡纳提克音乐：Kosalam拉格；拉维·香卡。'},
+    neapMinor: {ru:'Карнатическая музыка Индии: рага Дхенука.', en:'Carnatic music of India: raga Dhenuka.', zh:'印度卡纳提克音乐：Dhenuka拉格。'},
+    neapMajor: {ru:'Карнатическая музыка Индии: рага Кокилаприя; изредка в Северной Индии.',
+                en:'Carnatic music of India: raga Kokilapriya; occasionally in North India.',
+                zh:'印度卡纳提克音乐：Kokilapriya拉格；北印度偶尔使用。'}
+  };
+  var MODES_SCHEME_INFO_NOTE = {ru:'Вся информация о применении ладов (значки i) взята из интернета',
+                                en:'All information on where the modes are used (i icons) is taken from the internet',
+                                zh:'所有调式用途信息（i图标）均来自互联网'};
+  /* Выпадающий список жанров и стран над схемой: выбрал — лады из списка
+     modes подсвечиваются, остальные тускнеют; "— не выбрано —" снимает выбор.
+     Списки составлены по текстам значков (i) MODES_SCHEME_INFO. */
+  var MODES_SCHEME_GENRES = [
+    {ru:'Ирландская музыка', en:'Irish music', zh:'爱尔兰音乐', modes:['major','minor','dorian','mixolydian']},
+    {ru:'Шотландская музыка', en:'Scottish music', zh:'苏格兰音乐', modes:['dorian','mixolydian']},
+    {ru:'Фолк', en:'Folk', zh:'民谣', modes:['mixolydian']},
+    {ru:'Джаз', en:'Jazz', zh:'爵士', modes:['mixolydian','acoustic','melMinor','mixoFlat6','locrianNat2','dorianFlat2','lydianAug','altered']},
+    {ru:'Фанк', en:'Funk', zh:'放克', modes:['mixolydian']},
+    {ru:'Блюз', en:'Blues', zh:'布鲁斯', modes:['mixolydian']},
+    {ru:'Рок', en:'Rock', zh:'摇滚', modes:['mixolydian']},
+    {ru:'Метал', en:'Metal', zh:'金属乐', modes:['phrygian','phrygDom']},
+    {ru:'Фламенко', en:'Flamenco', zh:'弗拉门戈', modes:['phrygian','phrygDom','harmMinor']},
+    {ru:'Классическая музыка', en:'Classical music', zh:'古典音乐', modes:['lydian','acoustic','harmMajor']},
+    {ru:'Польская музыка (Подгалье)', en:'Polish music (Podhale)', zh:'波兰音乐（波德哈雷）', modes:['lydian']},
+    {ru:'Румынская музыка', en:'Romanian music', zh:'罗马尼亚音乐', modes:['acoustic','dorianSharp4']},
+    {ru:'Греческая музыка', en:'Greek music', zh:'希腊音乐', modes:['phrygDom','dorianSharp4']},
+    {ru:'Балканы', en:'Balkans', zh:'巴尔干', modes:['phrygDom']},
+    {ru:'Тувинская музыка', en:'Tuvan music', zh:'图瓦音乐', modes:['acoustic']},
+    {ru:'Бразилия (Нордесте)', en:'Brazil (Nordeste)', zh:'巴西（东北部）', modes:['acoustic']},
+    {ru:'Арабская музыка', en:'Arabic music', zh:'阿拉伯音乐', modes:['phrygDom']},
+    {ru:'Турецкая музыка', en:'Turkish music', zh:'土耳其音乐', modes:['hungarianMinor']},
+    {ru:'Индия', en:'India', zh:'印度', modes:['phrygDom','hungarianMinor','doubleHarm','harmMajor','mixoFlat2','lydianSharp2','neapMinor','neapMajor']}
+  ];
+  var MODES_SCHEME_GENRE_NONE = {ru:'— жанр или страна не выбраны —', en:'— no genre or country —', zh:'— 未选择风格或国家 —'};
+  var MODES_SCHEME_LEGEND_MAIN = {ru:'— основные лады', en:'— main modes', zh:'— 主要调式'};
+  var MODES_SCHEME_GENRE_RESET = {ru:'Сбросить', en:'Reset', zh:'重置'};
+  var modesSchemeGenre = -1;   // выбранный пункт списка (-1 — ничего)
+  // основные лады (были в схеме с начала) — обводка жёлтым
+  var MODES_SCHEME_MAIN = ['locrian','phrygian','phrygDom','dorian','minor','harmMinor',
+                           'melMinor','tonic','major','mixolydian','lydian','acoustic'];
+  var MODES_SCHEME_MAIN_STROKE = '#7BD389';   // цвет обводки
+  var MODES_SCHEME_MAIN_STROKE_OPACITY = 1;          // яркость: 1 = ярко, 0 = не видно
+  var MODES_SCHEME_MAIN_STROKE_WIDTH = 3;               // толщина
+  var MODES_SCHEME_FONT_SIZE = 18;
+  // C (тоника) — крупнее остальных: размер буквы, заливка, цвет буквы
+  // (радиус кружка — r у tonic в MODES_SCHEME_NODES)
+  var MODES_SCHEME_TONIC_FONT_SIZE = 28;
+  var MODES_SCHEME_TONIC_FILL = '#FFE066';
+  var MODES_SCHEME_TONIC_TEXT = 'var(--btn-text)';
+  var MODES_SCHEME_TONIC_FILL_OPACITY = 0;   // насыщенность заливки C (1 = сплошная)
+  var MODES_SCHEME_TONIC_STROKE = '#FFE066';
+  var MODES_SCHEME_TONIC_STROKE_OPACITY = 0.7;   // яркость жёлтой обводки C и линий от C (1 = без прозрачности)        // обводка C ('' — как у основных ладов)
+  // остальные линии между кружками: цвет и яркость (1 = без прозрачности, 0 = не видно)
+  var MODES_SCHEME_LINE_COLOR = '#D9D9D9';
+  var MODES_SCHEME_LINE_OPACITY = 0.5;
+  var MODES_SCHEME_ACC_WEIGHT = 700;  // толщина знаков ♭/♯ в схеме
+  var MODES_SCHEME_LINKS = [
+    ['locrian','phrygian'], ['phrygDom','phrygian'], ['phrygian','minor'],
+    ['dorian','minor'], ['melMinor','harmMinor'], ['harmMinor','minor'],
+    ['minor','tonic'], ['tonic','major'], ['mixolydian','major'],
+    ['mixolydian','acoustic'], ['acoustic','lydian'], ['lydian','major'],
+    // добавленные лады — связи с соседями, отличающимися одной нотой
+    ['mixoFlat6','mixolydian'], ['mixoFlat6','minor'], ['mixoFlat6','phrygDom'],
+    ['locrianNat2','minor'], ['locrianNat2','locrian'],
+    ['dorianFlat2','dorian'], ['dorianFlat2','phrygian'],
+    ['lydianAug','lydian'], ['altered','locrian'],
+    ['harmMajor','major'], ['harmMajor','harmMinor'],
+    ['ionianSharp5','major'], ['lydianSharp2','lydian'],
+    ['mixoFlat2','mixolydian'], ['mixoFlat2','phrygDom'],
+    ['dorianSharp4','dorian'], ['dorianFlat5','dorian'],
+    ['locrianNat6','locrian'], ['phrygianFlat4','phrygian'],
+    ['lydianFlat3','melMinor'], ['lydianFlat3','lydian'],
+    ['hungarianMinor','harmMinor'], ['neapMinor','harmMinor'], ['neapMinor','phrygian'],
+    ['neapMajor','melMinor'], ['doubleHarm','phrygDom']
+  ];
+
+  function buildModesSchemeSvg(){
+    var lang = (typeof appLang !== 'undefined' && (appLang === 'en' || appLang === 'zh')) ? appLang : 'ru';
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 1600 870');
+    function el(name, attrs, parent){
+      var e = document.createElementNS(NS, name);
+      for(var k in attrs) e.setAttribute(k, attrs[k]);
+      parent.appendChild(e);
+      return e;
+    }
+    // линии — от края до края кружков
+    MODES_SCHEME_LINKS.forEach(function(p){
+      var a = MODES_SCHEME_NODES[p[0]], b = MODES_SCHEME_NODES[p[1]];
+      var dx = b.x - a.x, dy = b.y - a.y, d = Math.sqrt(dx*dx + dy*dy);
+      var ux = dx / d, uy = dy / d, gap = 4;
+      // от Мажора/Минора к основным ладам — жёлтые линии (как обводка)
+      var mm = function(k){ return k === 'major' || k === 'minor'; };
+      var main = function(k){ return MODES_SCHEME_MAIN.indexOf(k) >= 0; };
+      var yellow = (mm(p[0]) && main(p[1])) || (mm(p[1]) && main(p[0]));
+      var toTonic = !!MODES_SCHEME_TONIC_STROKE && (p[0] === 'tonic' || p[1] === 'tonic');
+      el('line', {
+        x1: a.x + ux*(a.r+gap), y1: a.y + uy*(a.r+gap),
+        x2: b.x - ux*(b.r+gap), y2: b.y - uy*(b.r+gap),
+        // линии от C к Мажору и Минору — цветом обводки C
+        stroke: toTonic ? MODES_SCHEME_TONIC_STROKE : (yellow ? MODES_SCHEME_MAIN_STROKE : MODES_SCHEME_LINE_COLOR),
+        'stroke-opacity': toTonic ? MODES_SCHEME_TONIC_STROKE_OPACITY : (yellow ? MODES_SCHEME_MAIN_STROKE_OPACITY : MODES_SCHEME_LINE_OPACITY),
+        'stroke-width':4, 'stroke-linecap':'round'
+      }, svg);
+    });
+    // кружки с подписями
+    Object.keys(MODES_SCHEME_NODES).forEach(function(key){
+      var n = MODES_SCHEME_NODES[key];
+      var g = el('g', {'font-family':'var(--font)', 'text-anchor':'middle', 'data-mode':key}, svg);  // шрифт подсказок
+      var isMain = MODES_SCHEME_MAIN.indexOf(key) >= 0;
+      // C — тоника всех ладов: своя обводка и лёгкая заливка (MODES_SCHEME_TONIC_*)
+      if(n.big) el('circle', {cx:n.x, cy:n.y, r:n.r, fill:'var(--btn-bg)'}, g);  // подложка под полупрозрачную заливку C
+      el('circle', {cx:n.x, cy:n.y, r:n.r, fill: n.big ? MODES_SCHEME_TONIC_FILL : 'var(--btn-bg)',
+        'fill-opacity': n.big ? MODES_SCHEME_TONIC_FILL_OPACITY : 1,
+        // обводка: C — жёлтая, основные — зелёная, остальные — цветом линий
+        stroke: (n.big && MODES_SCHEME_TONIC_STROKE) ? MODES_SCHEME_TONIC_STROKE : (isMain ? MODES_SCHEME_MAIN_STROKE : MODES_SCHEME_LINE_COLOR),
+        'stroke-opacity': (n.big && MODES_SCHEME_TONIC_STROKE) ? MODES_SCHEME_TONIC_STROKE_OPACITY : (isMain ? MODES_SCHEME_MAIN_STROKE_OPACITY : MODES_SCHEME_LINE_OPACITY),
+        'stroke-width': MODES_SCHEME_MAIN_STROKE_WIDTH}, g);
+      // шрифт — как в текстовых подсказках (#globalInfoTooltip): 18px,
+      // обычное начертание; меняется в MODES_SCHEME_FONT_SIZE
+      var fs = n.big ? MODES_SCHEME_TONIC_FONT_SIZE : MODES_SCHEME_FONT_SIZE;
+      var rows = [];
+      if(n.deg) rows.push({t:n.deg, size:fs, weight:'normal', red:false});
+      (n.lines[lang] || n.lines.ru).forEach(function(t){
+        rows.push({t:t, size:fs, weight: n.big ? 'bold' : 'normal', red:false});
+      });
+      if(n.alt) rows.push({t:n.alt, size:fs, weight:'normal', red:true});
+      var lh = 1.2, total = 0;
+      rows.forEach(function(r){ total += r.size*lh; });
+      var y = n.y - total/2 - (MODES_SCHEME_INFO[key] ? 5 : 0);  // место под значок (i) внизу
+      rows.forEach(function(r){
+        y += r.size*lh;
+        var t = el('text', {
+          x:n.x, y:y - r.size*0.28, 'font-size':r.size, 'font-weight':r.weight,
+          fill: r.red ? 'var(--tip-formula-red)' : (n.big ? MODES_SCHEME_TONIC_TEXT : 'var(--btn-text)')
+        }, g);
+        // знаки ♭/♯ — жирным (700), как подписи нот на самом круге
+        // (.selLabel): в обычном начертании они слишком тонкие
+        r.t.split(/([♭♯♮])/).forEach(function(part){
+          if(part === '') return;
+          if(part === '♭' || part === '♯' || part === '♮'){
+            var acc = el('tspan', {'font-weight':MODES_SCHEME_ACC_WEIGHT}, t);
+            acc.textContent = part;
+          } else {
+            t.appendChild(document.createTextNode(part));
+          }
+        });
+      });
+    });
+    return svg;
+  }
+
+  // подсветка ладов выбранного жанра/страны: остальные кружки, линии
+  // и значки (i) тускнеют (CSS: .schemeGenreOn / .schemeGenreHit)
+  function applyModesSchemeGenre(wrap){
+    var svg = wrap.querySelector('svg');
+    var gn = MODES_SCHEME_GENRES[modesSchemeGenre];
+    var list = gn ? gn.modes : [];
+    svg.classList.toggle('schemeGenreOn', !!gn);
+    wrap.classList.toggle('schemeGenreOn', !!gn);
+    svg.querySelectorAll('g[data-mode]').forEach(function(g){
+      g.classList.toggle('schemeGenreHit', list.indexOf(g.getAttribute('data-mode')) >= 0);
+    });
+    wrap.querySelectorAll('.modesSchemeInfo').forEach(function(ic){
+      ic.classList.toggle('schemeGenreHit', list.indexOf(ic.getAttribute('data-mode')) >= 0);
+    });
+  }
+
+  // схема + значки (i) "где используется" в кружках
+  function buildModesSchemeView(){
+    var lang = (typeof appLang !== 'undefined' && (appLang === 'en' || appLang === 'zh')) ? appLang : 'ru';
+    var outer = document.createElement('div');
+    var note = document.createElement('div');
+    note.className = 'modesSchemeNote';
+    note.textContent = MODES_SCHEME_INFO_NOTE[lang];
+    outer.appendChild(note);
+    // список жанров/стран
+    var sel = document.createElement('select');
+    sel.className = 'modesSchemeGenreSelect';
+    var o0 = document.createElement('option');
+    o0.value = '-1'; o0.textContent = MODES_SCHEME_GENRE_NONE[lang];
+    sel.appendChild(o0);
+    MODES_SCHEME_GENRES.forEach(function(gn, i){
+      var o = document.createElement('option');
+      o.value = String(i); o.textContent = gn[lang] || gn.ru;
+      sel.appendChild(o);
+    });
+    sel.value = String(modesSchemeGenre);
+    // кнопка "Сбросить" — снимает выбор жанра/страны (видна, когда что-то выбрано)
+    var resetBtn = document.createElement('button');
+    resetBtn.className = 'modesSchemeGenreReset';
+    resetBtn.textContent = MODES_SCHEME_GENRE_RESET[lang];
+    var genreRow = document.createElement('div');
+    genreRow.className = 'modesSchemeGenreRow';
+    genreRow.appendChild(resetBtn);
+    genreRow.appendChild(sel);
+    outer.appendChild(genreRow);
+    // пояснение: зелёная обводка — основные лады
+    var legend = document.createElement('div');
+    legend.className = 'modesSchemeLegend';
+    var dot = document.createElement('span');
+    dot.className = 'modesSchemeLegendDot';
+    dot.style.borderColor = MODES_SCHEME_MAIN_STROKE;
+    legend.appendChild(dot);
+    legend.appendChild(document.createTextNode(MODES_SCHEME_LEGEND_MAIN[lang]));
+    outer.appendChild(legend);
+    var wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    outer.appendChild(wrap);
+    var svg = buildModesSchemeSvg();
+    wrap.appendChild(svg);
+    var vb = svg.getAttribute('viewBox').split(' ');
+    var W = +vb[2], H = +vb[3];
+    Object.keys(MODES_SCHEME_INFO).forEach(function(key){
+      var n = MODES_SCHEME_NODES[key], info = MODES_SCHEME_INFO[key];
+      if(!n || !info) return;
+      var ic = document.createElement('span');
+      ic.className = 'infoIcon modesSchemeInfo';
+      ic.textContent = 'i';
+      ic.setAttribute('data-tip', info[lang] || info.ru);
+      ic.setAttribute('data-mode', key);
+      // внутри кружка, внизу
+      ic.style.left = (n.x / W * 100) + '%';
+      ic.style.top = ((n.y + n.r - 16) / H * 100) + '%';
+      wrap.appendChild(ic);
+    });
+    sel.addEventListener('change', function(){
+      modesSchemeGenre = +sel.value;
+      applyModesSchemeGenre(wrap);
+      resetBtn.style.visibility = modesSchemeGenre >= 0 ? 'visible' : 'hidden';
+    });
+    resetBtn.addEventListener('click', function(){
+      modesSchemeGenre = -1;
+      sel.value = '-1';
+      applyModesSchemeGenre(wrap);
+      resetBtn.style.visibility = 'hidden';
+    });
+    resetBtn.style.visibility = modesSchemeGenre >= 0 ? 'visible' : 'hidden';
+    applyModesSchemeGenre(wrap);
+    return outer;
+  }
+
   function showTip(icon){
+    // кнопка "?" со схемой ладов — при наведении ничего не показываем,
+    // схема открывается по клику (см. "Окно со схемой ладов" ниже)
+    if(icon.hasAttribute('data-tip-scheme')) return;
+    // значки (i) в окне схемы — подсказку поверх окна
+    tip.classList.toggle('tipOverScheme', !!(icon.closest && icon.closest('#modesSchemePopup')));
     var text = icon.getAttribute('data-tip');
     if(!text) return;
     tip.classList.toggle('tipWide', icon.hasAttribute('data-tip-wide'));
@@ -17785,6 +18575,281 @@ if(circleIsFirstLaunch){
   // чтобы не зависала в неверном месте.
   window.addEventListener('scroll', hideTip, true);
   window.addEventListener('resize', hideTip);
+
+  /* ===== Окно со схемой ладов (кнопка "?" у "Выберите лад") =====
+     Клик по "?" — открыть/закрыть. Закрывается также кликом мимо окна,
+     клавишей Esc, прокруткой и изменением размера окна, а ещё если
+     кнопка "?" пропала с экрана (закрыли настройки, сменили вкладку).
+     На телефоне кнопка не нажимается. */
+  var schemePopup = document.createElement('div');
+  schemePopup.id = 'modesSchemePopup';
+  document.body.appendChild(schemePopup);
+  var schemeKeys = document.createElement('div');
+  schemeKeys.id = 'modesSchemeKeys';
+  document.body.appendChild(schemeKeys);
+  var schemeShade = document.createElement('div');
+  schemeShade.id = 'modesSchemeShade';
+  document.body.appendChild(schemeShade);
+  var schemeFocus = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  schemeFocus.id = 'modesSchemeFocus';
+  document.body.appendChild(schemeFocus);
+  var schemeFocusIcon = document.createElement('div');   // копия значка (i) поверх затемнения
+  schemeFocusIcon.id = 'modesSchemeFocusIcon';
+  document.body.appendChild(schemeFocusIcon);
+  var schemeIcon = null;
+
+  function placeBox(box, r){
+    // над кнопкой по центру; не влезает — под ней; в пределах окна
+    var margin = 8;
+    box.style.left = '0px'; box.style.top = '0px';
+    var bw = box.offsetWidth, bh = box.offsetHeight;
+    var left = r.left + r.width/2 - bw/2;
+    var top = r.top - bh - margin;
+    if(top < margin) top = r.bottom + margin;
+    left = Math.max(margin, Math.min(left, window.innerWidth - bw - margin));
+    top = Math.max(margin, Math.min(top, window.innerHeight - bh - margin));
+    box.style.left = left + 'px'; box.style.top = top + 'px';
+  }
+  function iconGone(icon){
+    var r = icon.getBoundingClientRect();
+    return r.width === 0 || r.bottom < 0 || r.top > window.innerHeight ||
+           r.right < 0 || r.left > window.innerWidth ||
+           getComputedStyle(icon).visibility === 'hidden';
+  }
+  function watchIcon(){
+    if(!schemeIcon) return;
+    if(iconGone(schemeIcon)){ closeScheme(); return; }
+    requestAnimationFrame(watchIcon);
+  }
+  function openScheme(icon){
+    hideTip();
+    schemePopup.textContent = '';
+    schemePopup.appendChild(buildModesSchemeView());
+    schemePopup.style.display = 'block';
+    // по центру экрана
+    schemePopup.style.left = '0px'; schemePopup.style.top = '0px';
+    var pw = schemePopup.offsetWidth, ph = schemePopup.offsetHeight;
+    schemePopup.style.left = Math.max(8, (window.innerWidth - pw) / 2) + 'px';
+    schemePopup.style.top = Math.max(8, (window.innerHeight - ph) / 2) + 'px';
+    schemeIcon = icon;
+    requestAnimationFrame(watchIcon);
+  }
+  function closeScheme(){
+    schemePopup.style.display = 'none';
+    hideSchemeKeys();
+    schemeIcon = null;
+  }
+  document.addEventListener('click', function(e){
+    var icon = e.target.closest ? e.target.closest('[data-tip-scheme]') : null;
+    if(!icon) return;
+    if(typeof isMobileLayout === 'function' && isMobileLayout()) return;
+    if(schemeIcon === icon) closeScheme(); else openScheme(icon);
+  });
+  document.addEventListener('pointerdown', function(e){
+    if(!schemeIcon) return;
+    if(schemePopup.contains(e.target)) return;
+    if(e.target.closest && e.target.closest('[data-tip-scheme]')) return;
+    closeScheme();
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if(schemeIcon && e.key === 'Escape') closeScheme();
+  });
+  window.addEventListener('scroll', function(){ if(schemeIcon) closeScheme(); }, true);
+  window.addEventListener('resize', function(){ if(schemeIcon) closeScheme(); });
+
+  /* ===== 2 клавиатуры при наведении на кружок лада =====
+     Гаммы от C. Правые лады сравниваются с C мажором, левые — с
+     C минором (как подписи ♭/♯ на кружках); Мажор и Минор — одна
+     клавиатура, C — ничего.
+     Цвета как у клавиатуры-подсказки: тоника var(--green), ноты лада —
+     синие. */
+  var MODES_SCHEME_SCALES = {
+    major:     ['C','D','E','F','G','A','B'],
+    minor:     ['C','D','E♭','F','G','A♭','B♭'],
+    lydian:    ['C','D','E','F♯','G','A','B'],
+    mixolydian:['C','D','E','F','G','A','B♭'],
+    acoustic:  ['C','D','E','F♯','G','A','B♭'],
+    dorian:    ['C','D','E♭','F','G','A','B♭'],
+    phrygian:  ['C','D♭','E♭','F','G','A♭','B♭'],
+    locrian:   ['C','D♭','E♭','F','G♭','A♭','B♭'],
+    harmMinor: ['C','D','E♭','F','G','A♭','B'],
+    melMinor:  ['C','D','E♭','F','G','A','B'],
+    phrygDom:  ['C','D♭','E','F','G','A♭','B♭'],
+    // добавленные лады
+    mixoFlat6:     ['C','D','E','F','G','A♭','B♭'],
+    locrianNat2:   ['C','D','E♭','F','G♭','A♭','B♭'],
+    dorianFlat2:   ['C','D♭','E♭','F','G','A','B♭'],
+    lydianAug:     ['C','D','E','F♯','G♯','A','B'],
+    altered:       ['C','D♭','E♭','F♭','G♭','A♭','B♭'],
+    harmMajor:     ['C','D','E','F','G','A♭','B'],
+    ionianSharp5:  ['C','D','E','F','G♯','A','B'],
+    lydianSharp2:  ['C','D♯','E','F♯','G','A','B'],
+    mixoFlat2:     ['C','D♭','E','F','G','A','B♭'],
+    dorianSharp4:  ['C','D','E♭','F♯','G','A','B♭'],
+    dorianFlat5:   ['C','D','E♭','F','G♭','A','B♭'],
+    locrianNat6:   ['C','D♭','E♭','F','G♭','A','B♭'],
+    phrygianFlat4: ['C','D♭','E♭','F♭','G','A♭','B♭'],
+    lydianFlat3:   ['C','D','E♭','F♯','G','A','B'],
+    hungarianMinor:['C','D','E♭','F♯','G','A♭','B'],
+    neapMinor:     ['C','D♭','E♭','F','G','A♭','B'],
+    neapMajor:     ['C','D♭','E♭','F','G','A','B'],
+    doubleHarm:    ['C','D♭','E','F','G','A♭','B']
+  };
+  var MODES_SCHEME_COMPARE = {
+    lydian:'major', mixolydian:'major', acoustic:'major',
+    dorian:'minor', phrygian:'minor', locrian:'minor',
+    harmMinor:'minor', melMinor:'minor', phrygDom:'minor',
+    mixoFlat6:'major', lydianAug:'major', harmMajor:'major', ionianSharp5:'major',
+    lydianSharp2:'major', mixoFlat2:'major', doubleHarm:'major',
+    locrianNat2:'minor', dorianFlat2:'minor', altered:'minor', dorianSharp4:'minor',
+    dorianFlat5:'minor', locrianNat6:'minor', phrygianFlat4:'minor', lydianFlat3:'minor',
+    hungarianMinor:'minor', neapMinor:'minor', neapMajor:'minor'
+  };
+  var MODES_SCHEME_KEYS_GAP = 56;          // расстояние между клавиатурами
+  // стрелка над отличающейся нотой лада (нижняя клавиатура), остриём
+  // вниз на клавишу; длина — доля длины белой клавиши (0.2 = 20%)
+  var MODES_SCHEME_ARROW_LEN = 0.2;
+  var MODES_SCHEME_ARROW_COLOR = 'var(--tip-formula-red)';
+  var MODES_SCHEME_NOTE_COLOR = 'rgba(59,109,145,0.9)';
+  var MODES_SCHEME_WHITE_PC = [0,2,4,5,7,9,11];
+
+  function schemeNotePc(n){
+    var pc = {C:0,D:2,E:4,F:5,G:7,A:9,B:11}[n[0]];
+    for(var i=1;i<n.length;i++){ if(n[i]==='♯') pc++; else if(n[i]==='♭') pc--; }
+    return (pc + 12) % 12;
+  }
+  function buildSchemeKeysSvg(modeKey){
+    var NS = 'http://www.w3.org/2000/svg';
+    var WW = TRAIN_PIANO_WHITE_W, WH = TRAIN_PIANO_WHITE_H;
+    var BW = TRAIN_PIANO_BLACK_W, BH = TRAIN_PIANO_BLACK_H;
+    var mode = MODES_SCHEME_SCALES[modeKey];
+    var ref = MODES_SCHEME_SCALES[MODES_SCHEME_COMPARE[modeKey]] || null;
+    var width = WW*7;
+    var height = ref ? WH*2 + MODES_SCHEME_KEYS_GAP : WH;
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('width', width); svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+    function el(name, attrs){
+      var e = document.createElementNS(NS, name);
+      for(var k in attrs) e.setAttribute(k, attrs[k]);
+      svg.appendChild(e); return e;
+    }
+    // x и тип клавиши по высоте ноты (0..11)
+    function keyOf(pc){
+      var wi = MODES_SCHEME_WHITE_PC.indexOf(pc);
+      if(wi >= 0) return {x:wi*WW, w:WW, black:false};
+      var left = MODES_SCHEME_WHITE_PC.indexOf(pc-1);
+      return {x:(left+1)*WW - BW/2, w:BW, black:true};
+    }
+    function drawKeyboard(notes, y){
+      var i;
+      for(i=0;i<7;i++) el('rect', {x:i*WW, y:y, width:WW, height:WH, 'class':'trainPianoWhiteKey'});
+      function color(idx){ return idx===0 ? 'var(--green)' : MODES_SCHEME_NOTE_COLOR; }
+      notes.forEach(function(n, idx){
+        var k = keyOf(schemeNotePc(n));
+        if(!k.black) el('rect', {x:k.x, y:y, width:k.w, height:WH, fill:color(idx)});
+      });
+      [0,1,3,4,5].forEach(function(wi){
+        el('rect', {x:(wi+1)*WW - BW/2, y:y, width:BW, height:BH, 'class':'trainPianoBlackKey'});
+      });
+      notes.forEach(function(n, idx){
+        var k = keyOf(schemeNotePc(n));
+        if(k.black) el('rect', {x:k.x, y:y, width:k.w, height:BH, fill:color(idx), opacity:'0.85'});
+      });
+      notes.forEach(function(n){
+        var k = keyOf(schemeNotePc(n));
+        var t = el('text', {
+          x:k.x + k.w/2, y: k.black ? (y + BH - 10) : (y + WH - 14), 'class':'trainPianoKeyLabel',
+          fill: k.black ? 'var(--piano-key-label-on-black, #fff)' : 'var(--piano-key-label-on-white, #141414)',
+          'font-size': k.black ? '11' : '13'
+        });
+        t.textContent = n;
+      });
+    }
+    if(!ref){ drawKeyboard(mode, 0); return svg; }
+    drawKeyboard(ref, 0);
+    var modeY = WH + MODES_SCHEME_KEYS_GAP;
+    drawKeyboard(mode, modeY);
+    var L = WH * MODES_SCHEME_ARROW_LEN, headL = L * 0.45, headW = 9, shaftW = 2.5;
+    mode.forEach(function(n, i){
+      if(n === ref[i]) return;
+      var k = keyOf(schemeNotePc(n)), cx = k.x + k.w/2, tipY = modeY - 2;
+      el('path', {
+        d: 'M' + (cx - shaftW/2) + ' ' + (tipY - L) +
+           ' L' + (cx + shaftW/2) + ' ' + (tipY - L) +
+           ' L' + (cx + shaftW/2) + ' ' + (tipY - headL) +
+           ' L' + (cx + headW/2) + ' ' + (tipY - headL) +
+           ' L' + cx + ' ' + tipY +
+           ' L' + (cx - headW/2) + ' ' + (tipY - headL) +
+           ' L' + (cx - shaftW/2) + ' ' + (tipY - headL) + ' Z',
+        fill: MODES_SCHEME_ARROW_COLOR
+      });
+    });
+    return svg;
+  }
+  function showSchemeKeys(modeKey, circleEl){
+    if(!MODES_SCHEME_SCALES[modeKey]){ hideSchemeKeys(); return; }
+    schemeKeys.textContent = '';
+    schemeKeys.appendChild(buildSchemeKeysSvg(modeKey));
+    schemeKeys.style.display = 'block';
+    // справа от кружка; не влезает — слева; по высоте — по центру кружка
+    var r = circleEl.getBoundingClientRect(), margin = 8;
+    schemeKeys.style.left = '0px'; schemeKeys.style.top = '0px';
+    var bw = schemeKeys.offsetWidth, bh = schemeKeys.offsetHeight;
+    var left = r.right + margin;
+    if(left + bw > window.innerWidth - margin) left = r.left - bw - margin;
+    var top = r.top + r.height/2 - bh/2;
+    left = Math.max(margin, Math.min(left, window.innerWidth - bw - margin));
+    top = Math.max(margin, Math.min(top, window.innerHeight - bh - margin));
+    schemeKeys.style.left = left + 'px'; schemeKeys.style.top = top + 'px';
+  }
+  // затемнить весь экран, кроме кружка g и окошка с клавиатурами:
+  // поверх затемнения рисуется копия кружка точно на его месте
+  // (g = null — снять затемнение)
+  function dimSchemeExcept(g){
+    var svg = schemePopup.querySelector('svg');
+    schemeFocusIcon.style.display = 'none';
+    if(!g || !svg){
+      schemeShade.style.display = 'none';
+      schemeFocus.style.display = 'none';
+      return;
+    }
+    // значок (i) этого лада — тоже поверх затемнения, чтобы не пропадал
+    var ic = schemePopup.querySelector('.modesSchemeInfo[data-mode="' + g.getAttribute('data-mode') + '"]');
+    if(ic){
+      var ir = ic.getBoundingClientRect();
+      var copy = ic.cloneNode(true);
+      copy.className = 'infoIcon';
+      copy.style.cssText = 'position:static;width:100%;height:100%;background:var(--tooltip-bg, #222);';
+      schemeFocusIcon.textContent = '';
+      schemeFocusIcon.appendChild(copy);
+      schemeFocusIcon.style.left = ir.left + 'px';
+      schemeFocusIcon.style.top = ir.top + 'px';
+      schemeFocusIcon.style.width = ir.width + 'px';
+      schemeFocusIcon.style.height = ir.height + 'px';
+      schemeFocusIcon.style.display = 'block';
+    }
+    var r = svg.getBoundingClientRect();
+    schemeFocus.setAttribute('viewBox', svg.getAttribute('viewBox'));
+    schemeFocus.setAttribute('width', r.width);
+    schemeFocus.setAttribute('height', r.height);
+    schemeFocus.style.left = r.left + 'px';
+    schemeFocus.style.top = r.top + 'px';
+    schemeFocus.textContent = '';
+    schemeFocus.appendChild(g.cloneNode(true));
+    schemeShade.style.display = 'block';
+    schemeFocus.style.display = 'block';
+  }
+  function hideSchemeKeys(){ schemeKeys.style.display = 'none'; dimSchemeExcept(null); }
+  schemePopup.addEventListener('mouseover', function(e){
+    var g = e.target.closest ? e.target.closest('g[data-mode]') : null;
+    var mode = g ? g.getAttribute('data-mode') : null;
+    if(g && MODES_SCHEME_SCALES[mode]){
+      showSchemeKeys(mode, g.querySelector('circle'));
+      dimSchemeExcept(g);
+    } else hideSchemeKeys();
+  });
+  schemePopup.addEventListener('mouseleave', hideSchemeKeys);
 })();
 </script>
 <script>
