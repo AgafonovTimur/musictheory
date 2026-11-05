@@ -97,8 +97,8 @@
     FRAME_IDS.forEach(function(fid){
       frames[fid].classList.toggle('active', fid === id);
     });
-    sendVisibility();
     try { localStorage.setItem(ACTIVE_KEY, id); } catch(e){}
+    sendVisibility();
     updateTitle();
     // фокус в открытую вкладку, чтобы сразу работали горячие клавиши
     try { frames[id].contentWindow.focus(); } catch(e){}
