@@ -406,14 +406,14 @@ Shortcuts work by the physical key position, so they behave the same on both Rus
 | **Y** | Open/close the settings panel. |
 | **Z** | "Chords/Modes" tab: show/hide the hint with the target chord/mode. |
 | **Mouse wheel** | "Learning" tab, outside the settings panel: cycles the selected note around the circle — down for clockwise, up for counter-clockwise. |
-| **Middle mouse button** | Open/close the settings panel (desktop only). |
+| **Right mouse button** | Open/close the settings panel (desktop only). |
 | **1–9 and 0** ("Chords/Modes" tab) | Switches between chord types, in the order shown on screen. |
 
 On mobile: two simultaneous taps open/close the settings panel.
 
 #### 3. What you can change via the menu (in-app settings)
 
-All items below are in the slide-out settings panel next to the circle (opened with the H/Y key, a swipe, or the middle mouse button).
+All items below are in the slide-out settings panel next to the circle (opened with the H/Y key, a swipe, or the Right mouse button).
 
 - Settings panel position: left / center / right.
 - Chord type selection — Major/Minor, Sus2, Sus4, plus 7, maj7, m7, m(Maj7), add9, m(add9), 9, maj9, m9, m(Maj9), add11, m(add11), 11, maj11, m11, 13, maj13, m13, m(Maj13).
@@ -509,7 +509,7 @@ Has two modes:
 
 | Key | Action |
 |---|---|
-| **W** / **Y** / **Middle mouse button** | Open/close the settings panel |
+| **W** / **Y** / **Right mouse button** | Open/close the settings panel |
 | **Q** | Open/close the error-statistics window |
 | **+** / **-** | Zoom the staff in/out |
 | **Shift + -** | Reset zoom to default (100%) |
@@ -644,7 +644,7 @@ For each mode you can choose:
 | **Space** (after already answering) | Go to the next question. |
 | **Mouse wheel up** | Repeat the current question. |
 | **Mouse wheel down** | Go to a new question (works at any time, even before answering). |
-| **Middle mouse button** or **Y** | Open/close the settings panel. |
+| **Right mouse button** or **Y** | Open/close the settings panel. |
 | **Two-finger tap** (on phone/tablet) | Open/close the settings panel. |
 
 #### 3. What you can change via the menu (in-app settings)
