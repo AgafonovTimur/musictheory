@@ -84,7 +84,6 @@
   });
 })();
 </script>
-
 <title>Кварто-квинтовый круг</title>
 <style>
 
@@ -1029,7 +1028,7 @@
   /* Верхние вкладки "Практика 1 / Практика 2 / Обучение" — как на макете.
      Переключают, какой уровень/режим отображается ниже; настройки
      каждого уровня сохраняются отдельно и не сбрасываются при переходах. */
-    /* Ряд переключения приложений (оболочка index.html). Оформлен теми же
+  /* Ряд переключения приложений (оболочка index.html). Оформлен теми же
      кнопками .topTabBtn, что и вкладки. По ширине 4px между кнопками,
      вертикальный отступ не задаём — его даёт gap самой панели настроек. */
   #appSwitchBar{
@@ -1038,7 +1037,7 @@
     gap:4px;
     width:100%;
   }
-#topTabBar{
+  #topTabBar{
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
     gap:8px;
@@ -1466,6 +1465,22 @@
   }
   body.practice-below:not(.is-mobile) #circleInner{
     top:calc(-1 * var(--practice-below-circle-up));
+  }
+  /* Во вкладке «Ноты» (включая «Интервалы») клавиатура снизу не должна
+     перекрывать сектора круга и перехватывать клики мышью. Поднимаем SVG
+     круга над клавиатурой; фоновая подложка закрывает её в зазорах между
+     секторами. Отдельный класс ограничивает это изменение вкладкой «Ноты». */
+  body.notes-piano-below:not(.is-mobile) #circle{
+    position:relative;
+    z-index:1;
+  }
+  #circleUnderlay{
+    display:none;
+    fill:var(--bg);
+    pointer-events:none;
+  }
+  body.notes-piano-below:not(.is-mobile) #circleUnderlay{
+    display:inline;
   }
   body.practice-below:not(.is-mobile) #l3PianoWrap,
   body.practice-below:not(.is-mobile) #l3PianoWrap:not(.underNote){
@@ -5908,7 +5923,6 @@ const I18N = {
   switchCircle:        { ru:'Квинтовый круг', en:'Circle of Fifths', zh:'五度圈' },
   switchNotes:         { ru:'Ноты', en:'Notes', zh:'音符' },
   switchEar:           { ru:'Слух', en:'Ear', zh:'听觉' },
-
   hotkeysHelp:         HOTKEYS_HELP_TEXT,
   tabTraining:        { ru:'Обучение',  en:'Training',  zh:'训练' },
   tabNotes:            { ru:'Ноты',      en:'Notes',     zh:'音符' },
@@ -6460,7 +6474,6 @@ const APP_TITLE_I18N = { ru: 'Кварто-квинтовый круг', en: 'Ci
 window.__setUiLangExternal = function(lang){ applyLanguage(lang); };
 function applyLanguage(lang){
   if(window.__appBridgeSend) window.__appBridgeSend({ type:'uiLang', lang: (lang === 'en' || lang === 'zh') ? lang : 'ru' });
-
   appLang = (lang === 'en' || lang === 'zh') ? lang : 'ru';
   localStorage.setItem(APP_LANG_KEY, appLang);
   document.title = APP_TITLE_I18N[appLang] || APP_TITLE_I18N.ru;
@@ -6709,6 +6722,9 @@ function el(tag, attrs){
    ========================================================= */
 const svg = document.getElementById('circle');
 const wedgeMap = {};
+// Подложка под секторами: когда клавиатура снизу, она закрывает её
+// в небольших промежутках между ячейками круга (как в «Обучении»).
+svg.appendChild(el('circle', {cx:CX, cy:CY, r:R3, id:'circleUnderlay'}));
 
 /* ===== Режим "Назови аккорд/лад" (вкладка "Аккорды/Лады") =====
    Галка level3NameModeCheckbox. На круге (и на клавиатуре, если она
@@ -10185,6 +10201,9 @@ function updatePracticeBelowLayout(){
     }
   }catch(e){ on = false; }
   document.body.classList.toggle('practice-below', on);
+  // Слои круга/клавиатуры меняем только для фортепиано во вкладке
+  // «Ноты» (уровни 1/2); сюда же входит режим «Интервалы».
+  document.body.classList.toggle('notes-piano-below', on && tab === 'notes' && inst === 'piano');
   try{ if(tab) l3PianoWrapEl.style.setProperty('--pbelow-gap', 'var(--' + tab + '-below-' + inst + '-gap)'); }catch(e){}
 }
 // настройки перешли на другую сторону — переключатель позиций грифа тоже
@@ -21360,7 +21379,6 @@ window.__appGetState = function(){
 };
 function setSidePanelPosition(position){
   if(window.__appBridgeSend) window.__appBridgeSend({ type:'settingsPosition', value: position });
-
   localStorage.setItem(SIDE_PANEL_PIN_KEY, position);
   updateSidePanelLayout();
 }
@@ -23425,7 +23443,6 @@ function onMidiMessage(event){
   // аккорд из «Обучения». Отпускание клавиш обрабатывается всегда,
   // чтобы уже звучащий аккорд не залипал.
   if(window.__appIsActive === false && (event.data[0] & 0xf0) === 0x90 && event.data[2] > 0) return;
-
   const data = event.data;
   const status = data[0] & 0xf0;
   const note = data[1];
