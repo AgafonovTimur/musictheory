@@ -8,7 +8,7 @@
      нативным двупальцевым "щипком" (там пальцы заметно двигаются). -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- ===== Мост для оболочки index.html (три приложения в iframe) =====
-     Стоит в <head> сразу после viewport: приложения отправляют язык уже при
+     Стоит в head сразу после viewport: приложения отправляют язык уже при
      инициализации, поэтому функция отправки должна существовать раньше их
      основных скриптов. Вне iframe скрипт молча ничего не делает. -->
 <script>
@@ -874,11 +874,12 @@
   #globalInfoTooltip .tipTableTitle{
     font-weight:bold;
   }
-  /* Список горячих клавиш — в 3 колонки:
-     1) Везде + Ноты, 2) Обучение, 3) Аккорды/Лады + MIDI */
+  /* Список горячих клавиш — в 5 колонок:
+     1) Везде + Ноты, 2) Обучение, 3) Интервалы + Аккорды/Лады,
+     4) Голосоведение, 5) MIDI */
   #globalInfoTooltip .tipCols{
     display:grid;
-    grid-template-columns:repeat(3, 1fr);
+    grid-template-columns:repeat(5, 1fr);
     gap:0 24px;
     align-items:start;
   }
@@ -1480,6 +1481,16 @@
     pointer-events:none;
   }
   body.notes-piano-below:not(.is-mobile) #circleUnderlay{
+    display:inline;
+  }
+  /* Тот же порядок слоёв для клавиатуры снизу во вкладке
+     «Аккорды/Лады» (меню «Аккорды» и «Лады»). Отдельный класс
+     включается только для фортепианной клавиатуры уровня 3. */
+  body.l3-piano-below:not(.is-mobile) #circle{
+    position:relative;
+    z-index:1;
+  }
+  body.l3-piano-below:not(.is-mobile) #circleUnderlay{
     display:inline;
   }
   body.practice-below:not(.is-mobile) #l3PianoWrap,
@@ -4109,8 +4120,8 @@
         <div class="cofBox" id="notesPairsBox">
         <div id="notesPairsRow" style="display:none;">
           <div class="notesPairsMainOption">
-            <label><input type="checkbox" id="notesPairsCheckbox"><span data-i18n="pairsLabel">Пары</span></label>
-            <span class="infoIcon" data-i18n-tip="tipPairs" data-tip="Заучивание пары на мажорном/минорном кольце&#10;&#10;«Скрыть круг» работает только при ответе «На MIDI/ПК клавиатуре».">i</span>
+            <label><input type="checkbox" id="notesPairsCheckbox"><span data-i18n="pairsLabel">Параллельный мажор/минор</span></label>
+            <span class="infoIcon" data-i18n-tip="tipPairs" data-tip="Заучивание пары на мажорном+минорном кольцах">i</span>
           </div>
         </div>
         </div>
@@ -5932,12 +5943,12 @@ const I18N = {
   notesInputMidi:      { ru:'На MIDI/ПК клавиатуре', en:'On MIDI/computer keyboard', zh:'MIDI/电脑键盘' },
   sidePanelPin:        { ru:'Отображать настройки:', en:'Show settings:', zh:'显示设置：' },
   crosshairLabel:      { ru:'Чёрточки', en:'Crosshair ticks', zh:'准星刻度' },
-  pairsLabel:          { ru:'Пары', en:'Pairs', zh:'配对' },
+  pairsLabel:          { ru:'Параллельный мажор/минор', en:'Relative major/minor', zh:'关系大调/小调' },
   hideCircleLabel:     { ru:'Скрыть круг', en:'Hide circle', zh:'隐藏圆环' },
   tipPairs: {
-    ru:'Заучивание пары на мажорном/минорном кольце\n\n«Скрыть круг» работает только при ответе «На MIDI/ПК клавиатуре».',
-    en:'Memorising the pair on the major/minor ring\n\n«Hide circle» works only when answering «On MIDI/computer keyboard».',
-    zh:'记忆大调/小调圆环上的配对\n\n「隐藏圆环」仅在使用「MIDI/电脑键盘」作答时有效。'
+    ru:'Заучивание пары на мажорном+минорном кольцах',
+    en:'Memorising the pair on the major + minor rings',
+    zh:'记忆大调环+小调环上的这一对调性'
   },
   crosshairBelow:      { ru:'Под кругом', en:'Under circle', zh:'圆环下方' },
   crosshairAbove:      { ru:'Над кругом', en:'Above circle', zh:'圆环上方' },
@@ -10201,9 +10212,11 @@ function updatePracticeBelowLayout(){
     }
   }catch(e){ on = false; }
   document.body.classList.toggle('practice-below', on);
-  // Слои круга/клавиатуры меняем только для фортепиано во вкладке
-  // «Ноты» (уровни 1/2); сюда же входит режим «Интервалы».
+  // Слои круга/клавиатуры меняем только для фортепианной клавиатуры
+  // снизу: отдельно во вкладках «Ноты» (включая «Интервалы») и
+  // «Аккорды/Лады», чтобы не менять остальные инструменты и режимы.
   document.body.classList.toggle('notes-piano-below', on && tab === 'notes' && inst === 'piano');
+  document.body.classList.toggle('l3-piano-below', on && tab === 'l3' && inst === 'piano');
   try{ if(tab) l3PianoWrapEl.style.setProperty('--pbelow-gap', 'var(--' + tab + '-below-' + inst + '-gap)'); }catch(e){}
 }
 // настройки перешли на другую сторону — переключатель позиций грифа тоже
@@ -26961,9 +26974,16 @@ if(circleIsFirstLaunch){
     if(icon.hasAttribute('data-tip-plain')){
       if(icon.hasAttribute('data-tip-wide')){
         // список горячих клавиш: блоки через пустую строку раскладываем
-        // в 3 колонки — [Везде, Ноты], [Обучение], [остальное]
+        // в 5 колонок — [Везде, Ноты], [Обучение], [Интервалы, Аккорды/Лады],
+        // [Голосоведение], [MIDI]
         var parts = text.split(/\n\s*\n/);
-        var cols = [parts.slice(0, 2), parts.slice(2, 3), parts.slice(3)];
+        var cols = [
+          parts.slice(0, 2),
+          parts.slice(2, 3),
+          parts.slice(3, 5),
+          parts.slice(5, 6),
+          parts.slice(6)
+        ];
         tip.textContent = '';
         var wrap = document.createElement('div');
         wrap.className = 'tipCols';
